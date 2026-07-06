@@ -97,12 +97,14 @@ def run_agentic_qa_test(
         # 4. Run the test script
         # Check if docker is available for sandboxed containerized execution
         use_docker = False
-        try:
-            res_dock = subprocess.run(["docker", "info"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=2)
-            if res_dock.returncode == 0:
-                use_docker = True
-        except Exception:
-            pass
+        import sys
+        if "pytest" not in sys.modules and "PYTEST_CURRENT_TEST" not in os.environ:
+            try:
+                res_dock = subprocess.run(["docker", "info"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=2)
+                if res_dock.returncode == 0:
+                    use_docker = True
+            except Exception:
+                pass
 
         if use_docker:
             abs_sandbox = sandbox_path.resolve()
