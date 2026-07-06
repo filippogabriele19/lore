@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LORE Developer Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #09090B;
+    --surface: #121214;
+    --card: #1C1C1F;
+    --border: #2E2E33;
+    --text: #F4F4F5;
+    --muted: #A1A1AA;
+    --accent: #6366F1;
+    --accent-hover: #4F46E5;
+    --emerald: #10B981;
+    --amber: #F59E0B;
+    --rose: #F43F5E;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-serif: 'Fraunces', serif;
+  }
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+  }
+  aside {
+    width: 280px;
+    background-color: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  .brand {
+    padding: 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand .logo {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #818CF8, #6366F1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .brand .logo-sub {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-top: 2px;
+  }
+  .nav-tabs {
+    flex: 1;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    color: var(--muted);
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+  .nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+    color: var(--text);
+  }
+  .nav-item.active {
+    background-color: rgba(99, 102, 241, 0.12);
+    color: var(--text);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+  }
+  .nav-icon {
+    font-size: 15px;
+  }
+  .nav-badge {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 99px;
+    background-color: var(--border);
+    color: var(--text);
+  }
+  .sidebar-stats {
+    padding: 20px 24px;
+    border-top: 1px solid var(--border);
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+  .sidebar-stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .sidebar-stat-row span:last-child {
+    font-weight: 600;
+    color: var(--text);
+  }
+  .main-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  header {
+    height: 70px;
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--surface);
+    flex-shrink: 0;
+  }
+  .h-title {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .h-title span {
+    font-weight: 400;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .h-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .h-badge {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .h-badge span {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .tab-content {
+    display: none;
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 40px;
+  }
+  .tab-content.active {
+    display: flex;
+    flex-direction: column;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+  .kpi-card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(95deg, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .kpi-card:hover::after {
+    opacity: 1;
+  }
+  .kpi-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+  .kpi-value {
+    font-family: var(--font-serif);
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .panel {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .panel-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #content-graph {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+  }
+  .graph-container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    position: relative;
+  }
+  #network-graph {
+    flex: 1;
+    height: 100%;
+    background-color: #0b0b0d;
+  }
+  .graph-sidebar {
+    width: 320px;
+    border-left: 1px solid var(--border);
+    background-color: var(--surface);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    overflow-y: auto;
+  }
+  .graph-option {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .graph-option label {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .slider-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+  }
+  .audit-layout {
+    display: flex;
+    gap: 24px;
+    height: 100%;
+    overflow: hidden;
+  }
+  .audit-sidebar {
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  .audit-main {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+  .audit-category-btn {
+    padding: 10px 14px;
+    border-radius: 6px;
+    color: var(--muted);
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+  .audit-category-btn:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+  .audit-category-btn.active {
+    background-color: var(--card);
+    border-color: var(--border);
+    color: var(--text);
+  }
+  .finding-card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .finding-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .finding-title {
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .finding-metric {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .finding-file {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    background-color: rgba(99, 102, 241, 0.08);
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+    word-break: break-all;
+  }
+  .finding-desc {
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .badge {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    border-radius: 99px;
+    border: 1px solid transparent;
+  }
+  .badge-critical { background-color: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.3); color: var(--rose); }
+  .badge-warning { background-color: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); color: var(--amber); }
+  .badge-info { background-color: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: var(--emerald); }
+  .diff-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    height: 100%;
+    overflow: hidden;
+    margin-top: -32px;
+    padding: 32px 0;
+  }
+  .diff-sidebar {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    padding-right: 20px;
+    overflow-y: auto;
+  }
+  .diff-file-item {
+    padding: 10px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    margin-bottom: 4px;
+    color: var(--muted);
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+  .diff-file-item:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+    color: var(--text);
+  }
+  .diff-file-item.active {
+    background-color: var(--card);
+    border-color: var(--border);
+    color: var(--text);
+  }
+  .diff-main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .diff-code-wrapper {
+    flex: 1;
+    overflow: auto;
+    background-color: #0b0b0d;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .diff-code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+  .diff-line {
+    display: block;
+    padding: 0 8px;
+  }
+  .diff-add { background-color: rgba(16, 185, 129, 0.15); color: #84cc16; }
+  .diff-del { background-color: rgba(244, 63, 94, 0.15); color: #f43f5e; }
+  .diff-info { color: #38bdf8; opacity: 0.8; font-weight: 500; }
+  .diff-toolbar {
+    margin-top: 16px;
+    padding: 16px;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background-color: var(--accent);
+    color: var(--text);
+  }
+  .btn-primary:hover {
+    background-color: var(--accent-hover);
+  }
+  .btn-secondary {
+    background-color: transparent;
+    border-color: var(--border);
+    color: var(--muted);
+  }
+  .btn-secondary:hover {
+    background-color: rgba(255,255,255,0.05);
+    color: var(--text);
+  }
+  .btn-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+  }
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .commit-card {
+    border-left: 3px solid var(--accent);
+    padding: 14px 20px;
+    background-color: rgba(255, 255, 255, 0.01);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 12px;
+  }
+  .commit-card-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .commit-hash {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .commit-body {
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+    word-break: break-word;
+  }
+  .commit-files {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    word-break: break-all;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+  }
+  .legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+
+  <aside>
+    <div class="brand">
+      <div>
+        <div class="logo">LORE</div>
+        <div class="logo-sub">Developer Console</div>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <div class="nav-item active" id="nav-dashboard" onclick="switchTab('dashboard')">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard</span>
+      </div>
+      <div class="nav-item" id="nav-graph" onclick="switchTab('graph')">
+        <span class="nav-icon">🕸️</span>
+        <span>Knowledge Graph</span>
+      </div>
+      <div class="nav-item" id="nav-audit" onclick="switchTab('audit')">
+        <span class="nav-icon">🔍</span>
+        <span>Audit Findings</span>
+        <span class="nav-badge" id="badge-audit">0</span>
+      </div>
+      <div class="nav-item" id="nav-compliance" onclick="switchTab('compliance')">
+        <span class="nav-icon">🛡️</span>
+        <span>Compliance & ADRs</span>
+        <span class="nav-badge" id="badge-compliance">0</span>
+      </div>
+      <div class="nav-item" id="nav-diff" onclick="switchTab('diff')" style="display:none">
+        <span class="nav-icon">💻</span>
+        <span>Diff Review</span>
+        <span class="nav-badge" id="badge-diff" style="background-color:var(--rose)">0</span>
+      </div>
+      <div class="nav-item" id="nav-cve" onclick="switchTab('cve')" style="display:none">
+        <span class="nav-icon">🐛</span>
+        <span>CVE Analysis</span>
+      </div>
+      <div class="nav-item" id="nav-batch" onclick="switchTab('batch')" style="display:none">
+        <span class="nav-icon">📂</span>
+        <span>Batch Audit</span>
+      </div>
+    </div>
+    
+    <div class="sidebar-stats">
+      <div id="backfill-progress-container" style="display:none; margin-bottom:16px; padding:12px; background-color:rgba(99,102,241,0.06); border:1px solid var(--border); border-radius:8px">
+        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:6px">
+          <span id="backfill-title" style="font-weight:600; color:var(--accent)">⚙️ Mining History</span>
+          <span id="backfill-pct" style="font-weight:600; color:var(--text)">0%</span>
+        </div>
+        <div style="width:100%; height:4px; background-color:var(--border); border-radius:99px; overflow:hidden; margin-bottom:6px">
+          <div id="backfill-bar" style="width:0%; height:100%; background-color:var(--accent); transition:width 0.3s ease"></div>
+        </div>
+        <div id="backfill-desc" style="font-size:10px; color:var(--muted)">Preparing commits...</div>
+      </div>
+      <div class="sidebar-stat-row">
+        <span>Files Scanned</span>
+        <span id="stat-files">0</span>
+      </div>
+      <div class="sidebar-stat-row">
+        <span>Symbols Indexed</span>
+        <span id="stat-symbols">0</span>
+      </div>
+      <div class="sidebar-stat-row">
+        <span>Virtual Edges</span>
+        <span id="stat-virtual">0</span>
+      </div>
+      <div class="sidebar-stat-row">
+        <span>Decision Links</span>
+        <span id="stat-links">0</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-pane">
+    <header>
+      <div class="h-title">Project: <span id="project-title-name">Loading...</span></div>
+      <div class="h-meta">
+        <div class="h-badge">LORE Knowledge Graph: <span>Active</span></div>
+      </div>
+    </header>
+
+    <div class="tab-content active" id="content-dashboard">
+      <div class="stats-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Symbols</div>
+          <div class="kpi-value" id="kpi-symbols">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Decision Links</div>
+          <div class="kpi-value" id="kpi-links">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Hotspots</div>
+          <div class="kpi-value" id="kpi-hotspots">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Virtual Edges</div>
+          <div class="kpi-value" id="kpi-virtual">0</div>
+        </div>
+      </div>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+        <div class="panel">
+          <div class="panel-title">💡 What are Virtual Edges?</div>
+          <p style="color:var(--muted); line-height:1.6; margin-bottom:12px">
+            Standard static analysis tools only see imports and call chains. LORE mines your Git history and co-commit patterns to identify <strong>Virtual Edges</strong>—files that co-evolve together across commits without explicit code references.
+          </p>
+          <p style="color:var(--muted); line-height:1.6">
+            If a modification is made to a file with strong virtual coupling, LORE automatically alerts developers and indexes these implicit dependencies in its Knowledge Graph to prevent regressions.
+          </p>
+          <div style="margin-top:20px; display:flex; gap:12px">
+            <button class="btn btn-primary" onclick="switchTab('graph')">Explore Knowledge Graph</button>
+            <button class="btn btn-secondary" onclick="switchTab('audit')">View Audit Report</button>
+          </div>
+        </div>
+        
+        <div class="panel" style="display:flex; flex-direction:column; max-height:400px;">
+          <div class="panel-title">📜 Mined Intent Logs (Recent)</div>
+          <div style="flex:1; overflow-y:auto; padding-right:6px" id="intent-logs-list">
+            <span style="color:var(--muted)">No intent logs found in history.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="content-graph">
+      <div class="graph-container">
+        <div id="network-graph"></div>
+        <div class="graph-sidebar">
+          <div class="panel-title">Graph Explorer</div>
+          
+          <div class="graph-option">
+            <label>
+              <input type="checkbox" id="chk-structural" checked onchange="renderGraph()">
+              <span>Structural Imports</span>
+            </label>
+            <span style="font-size:10px; color:var(--muted); margin-left:24px">Dashed gray lines (Import/Call)</span>
+          </div>
+          
+          <div class="graph-option">
+            <label>
+              <input type="checkbox" id="chk-virtual" checked onchange="renderGraph()">
+              <span style="color:var(--accent); font-weight:600">Virtual Coupling</span>
+            </label>
+            <span style="font-size:10px; color:var(--muted); margin-left:24px">Solid purple lines (Co-commit coupling)</span>
+            
+            <div class="slider-container" id="slider-coupling-container">
+              <div class="slider-header">
+                <span>Min. Coupling Rate</span>
+                <span id="label-coupling">40%</span>
+              </div>
+              <input type="range" id="range-coupling" min="40" max="95" value="40" oninput="document.getElementById('label-coupling').innerText = this.value + '%'; renderGraph();">
+            </div>
+          </div>
+          
+          <div class="graph-option">
+            <label>
+              <input type="checkbox" id="chk-isolated" onchange="renderGraph()">
+              <span>Show Isolated Files</span>
+            </label>
+            <span style="font-size:10px; color:var(--muted); margin-left:24px">Include files with no active connections in the view</span>
+          </div>
+          
+          <div style="border-top:1px solid var(--border); padding-top:20px; display:flex; flex-direction:column; gap:12px">
+            <div class="panel-title" style="margin-bottom:0">Legend</div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color:#6366F1"></div>
+              <span>Co-change coupling Edge</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color:#475569; height:1px; border-top:1.5px dashed #475569"></div>
+              <span>Static Import Dependency</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color:#18181B; border: 1.5px solid #6366F1"></div>
+              <span>File Node (size scales by LOC)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="content-audit">
+      <div class="audit-layout">
+        <div class="audit-sidebar" id="audit-sidebar-cats">
+        </div>
+        <div class="audit-main" id="audit-cards-container">
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="content-compliance">
+      <div class="panel">
+        <div class="panel-title">🛡️ Compliance Decisions & Invariants (ADRs)</div>
+        <p style="color:var(--muted); margin-bottom: 20px;">
+          Decisions and design rules mined dynamically from developer chat transcripts, git commit history, and predictive vulnerability analysis reports.
+        </p>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Symbol / Context</th>
+                <th>Source Type</th>
+                <th>Reference</th>
+                <th>Confidence</th>
+                <th>Invariant Constraint / Description</th>
+              </tr>
+            </thead>
+            <tbody id="compliance-tbody">
+              <tr>
+                <td colspan="5" style="color:var(--muted); text-align:center;">No decision links loaded in database.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="content-diff">
+      <div class="diff-layout">
+        <div class="diff-sidebar" id="diff-file-list">
+        </div>
+        <div class="diff-main">
+          <div class="diff-code-wrapper">
+            <div class="diff-code" id="diff-code-box">Select a file to review.</div>
+          </div>
+          
+          <div class="diff-toolbar">
+            <div style="font-size:12px">
+              <strong>Refactoring Task Context</strong>
+              <div id="diff-task-name" style="color:var(--muted); margin-top:2px">Generating...</div>
+            </div>
+            <div style="display:flex; gap:12px" id="action-buttons-container">
+              <button class="btn btn-secondary" onclick="handleDiffAction('discard')">Discard Changes</button>
+              <button class="btn btn-primary" onclick="handleDiffAction('apply')">Apply to Codebase</button>
+            </div>
+            <div id="action-status-msg" style="display:none; font-weight:600; font-size:12px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="content-cve">
+      <div id="cve-stats-banner" class="stats-grid" style="margin-bottom:24px">
+      </div>
+      <div style="display:grid; grid-template-columns: 280px 1fr; gap:24px; height:100%; overflow:hidden;">
+        <div style="display:flex; flex-direction:column; border-right:1px solid var(--border); padding-right:16px; overflow-y:auto;" id="cve-sidebar-list">
+        </div>
+        <div style="overflow-y:auto; padding-bottom:32px" id="cve-main-findings">
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="content-batch">
+      <div class="panel">
+        <div class="panel-title">📂 Batch Vulnerability Retrospective Findings</div>
+        <div style="overflow-x:auto">
+          <table id="batch-table">
+            <thead>
+              <tr>
+                <th>Verdict / CVE</th>
+                <th>Project</th>
+                <th>Severity</th>
+                <th>Detection Score</th>
+                <th>Main Indicator</th>
+              </tr>
+            </thead>
+            <tbody id="batch-tbody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const LORE_DATA = {{LORE_DATA_JSON}};
+    
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      
+      const targetContent = document.getElementById('content-' + tabId);
+      const targetNav = document.getElementById('nav-' + tabId);
+      if (targetContent && targetNav) {
+        targetContent.classList.add('active');
+        targetNav.classList.add('active');
+      }
+      
+      if (tabId === 'graph') {
+        setTimeout(renderGraph, 100);
+      }
+    }
+    
+    function formatDiff(diffText) {
+      if (!diffText) return '<div class="diff-line">No changes detected.</div>';
+      return diffText.split('\\n').map(line => {
+        let cls = '';
+        if (line.startsWith('+') && !line.startsWith('+++')) cls = 'diff-add';
+        else if (line.startsWith('-') && !line.startsWith('---')) cls = 'diff-del';
+        else if (line.startsWith('@@')) cls = 'diff-info';
+        
+        return `<span class="diff-line ${cls}">${escapeHtml(line)}</span>`;
+      }).join('');
+    }
+    
+    function escapeHtml(s) {
+      if (!s) return '';
+      return s.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    
+    function selectDiffFile(filePath) {
+      document.querySelectorAll('.diff-file-item').forEach(el => el.classList.remove('active'));
+      const idKey = 'diff-file-' + filePath.replace(/[^a-zA-Z0-9]/g, '_');
+      const item = document.getElementById(idKey);
+      if (item) item.classList.add('active');
+      
+      const diffBox = document.getElementById('diff-code-box');
+      if (LORE_DATA.diff && LORE_DATA.diff.diff) {
+        const fileDiffs = LORE_DATA.diff.diff.split('diff --git');
+        let matchedDiff = '';
+        for (let part of fileDiffs) {
+          if (part.includes('b/' + filePath) || part.includes('a/' + filePath)) {
+            matchedDiff = 'diff --git' + part;
+            break;
+          }
+        }
+        if (matchedDiff) {
+          diffBox.innerHTML = formatDiff(matchedDiff);
+        } else {
+          diffBox.innerHTML = '<div class="diff-line">No changes staged for this file.</div>';
+        }
+      } else {
+        diffBox.innerHTML = '<div class="diff-line">Select a file to view diff.</div>';
+      }
+    }
+    
+    function handleDiffAction(action) {
+      const container = document.getElementById('action-buttons-container');
+      const status = document.getElementById('action-status-msg');
+      container.style.display = 'none';
+      status.style.display = 'block';
+      status.innerText = action === 'apply' ? 'Applying changes...' : 'Discarding changes...';
+      
+      fetch('/api/diff/' + action, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            status.style.color = 'var(--emerald)';
+            status.innerText = data.message;
+            setTimeout(() => {
+              LORE_DATA.diff = null;
+              document.getElementById('nav-diff').style.display = 'none';
+              switchTab('dashboard');
+            }, 1500);
+          } else {
+            status.style.color = 'var(--rose)';
+            status.innerText = 'Error: ' + data.message;
+            setTimeout(() => {
+              container.style.display = 'flex';
+              status.style.display = 'none';
+            }, 3000);
+          }
+        })
+        .catch(err => {
+          status.style.color = 'var(--rose)';
+          status.innerText = 'Failed to execute: ' + err;
+          setTimeout(() => {
+            container.style.display = 'flex';
+            status.style.display = 'none';
+          }, 3000);
+        });
+    }
+    
+    let network = null;
+    function renderGraph() {
+      const container = document.getElementById('network-graph');
+      if (!container || !LORE_DATA.graph.nodes || !LORE_DATA.graph.nodes.length) return;
+      
+      const showStructural = document.getElementById('chk-structural').checked;
+      const showVirtual = document.getElementById('chk-virtual').checked;
+      const showIsolated = document.getElementById('chk-isolated').checked;
+      const minCoupling = parseFloat(document.getElementById('range-coupling').value) / 100;
+      
+      const filteredEdges = LORE_DATA.graph.edges.filter(e => {
+        if (e.type === 'structural' && !showStructural) return false;
+        if (e.type === 'virtual') {
+          if (!showVirtual) return false;
+          if (e.val_coupling < minCoupling) return false;
+        }
+        return true;
+      });
+      
+      const connectedNodeIds = new Set();
+      filteredEdges.forEach(e => {
+        connectedNodeIds.add(e.from);
+        connectedNodeIds.add(e.to);
+      });
+      
+      const filteredNodes = LORE_DATA.graph.nodes.filter(n => {
+        if (showIsolated) return true;
+        return connectedNodeIds.has(n.id) || n.is_hotspot || n.has_dl;
+      });
+      
+      const data = {
+        nodes: new vis.DataSet(filteredNodes),
+        edges: new vis.DataSet(filteredEdges)
+      };
+      
+      const options = {
+        nodes: {
+          shape: 'dot',
+          scaling: { min: 14, max: 38 },
+          font: { color: '#E4E4E7', size: 11, face: 'Inter' },
+          borderWidth: 1.5,
+          color: {
+            background: '#1C1C1F',
+            border: '#52525B',
+            highlight: { background: '#6366F1', border: '#818CF8' }
+          }
+        },
+        edges: {
+          smooth: { type: 'continuous' }
+        },
+        physics: {
+          stabilization: { iterations: 100 },
+          barnesHut: { gravitationalConstant: -1800, centralGravity: 0.25, springLength: 95 }
+        }
+      };
+      
+      network = new vis.Network(container, data, options);
+    }
+    
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('project-title-name').innerText = LORE_DATA.project_name;
+      
+      document.getElementById('stat-files').innerText = LORE_DATA.stats.files || 0;
+      document.getElementById('stat-symbols').innerText = LORE_DATA.stats.symbols || 0;
+      document.getElementById('stat-virtual').innerText = LORE_DATA.stats.virtual_edges || 0;
+      document.getElementById('stat-links').innerText = LORE_DATA.stats.links || 0;
+      
+      document.getElementById('kpi-symbols').innerText = LORE_DATA.stats.symbols || 0;
+      document.getElementById('kpi-links').innerText = LORE_DATA.stats.links || 0;
+      document.getElementById('kpi-hotspots').innerText = LORE_DATA.stats.hotspots || 0;
+      document.getElementById('kpi-virtual').innerText = LORE_DATA.stats.virtual_edges || 0;
+      
+      const complianceBadge = document.getElementById('badge-compliance');
+      const complianceTbody = document.getElementById('compliance-tbody');
+      if (LORE_DATA.decision_links && LORE_DATA.decision_links.length) {
+        complianceBadge.innerText = LORE_DATA.decision_links.length;
+        complianceTbody.innerHTML = LORE_DATA.decision_links.map(dl => {
+          let sourceLabel = dl.source_type;
+          let sourceCls = 'badge-info';
+          if (dl.source_type === 'chat_adr') {
+            sourceLabel = '💬 Chat ADR';
+            sourceCls = 'badge-critical';
+          } else if (dl.source_type === 'commit_adr' || dl.source_type === 'git_commit') {
+            sourceLabel = '📝 Commit ADR';
+            sourceCls = 'badge-warning';
+          } else if (dl.source_type === 'hotspot_adr') {
+            sourceLabel = '⚠️ Hotspot ADR';
+            sourceCls = 'badge-warning';
+          }
+          return `
+            <tr>
+              <td><strong style="color:var(--accent)">${escapeHtml(dl.symbol_name)}</strong></td>
+              <td><span class="badge ${sourceCls}">${escapeHtml(sourceLabel)}</span></td>
+              <td><code class="ic">${escapeHtml(dl.source_ref)}</code></td>
+              <td><strong>${(dl.confidence * 100).toFixed(0)}%</strong></td>
+              <td style="color:var(--text); max-width: 400px; word-break: break-word;">${escapeHtml(dl.description)}</td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        complianceBadge.innerText = 0;
+      }
+      
+      const logContainer = document.getElementById('intent-logs-list');
+      if (LORE_DATA.commits_reasoning && LORE_DATA.commits_reasoning.length) {
+        logContainer.innerHTML = LORE_DATA.commits_reasoning.map(c => `
+          <div class="commit-card">
+            <div class="commit-card-header">
+              <span class="commit-hash">${c.hash}</span>
+              <span>${c.date.substring(0, 16)} · ${escapeHtml(c.author)}</span>
+            </div>
+            <div class="commit-body">${escapeHtml(c.body.substring(0, 200))}${c.body.length > 200 ? '...' : ''}</div>
+            <div class="commit-files">Touched: ${c.files.slice(0, 3).join(', ')}${c.files.length > 3 ? '...' : ''}</div>
+          </div>
+        `).join('');
+      }
+      
+      const auditBadge = document.getElementById('badge-audit');
+      auditBadge.innerText = LORE_DATA.findings ? LORE_DATA.findings.length : 0;
+      
+      if (LORE_DATA.findings && LORE_DATA.findings.length) {
+        const catsMap = {};
+        LORE_DATA.findings.forEach(f => {
+          catsMap[f.category] = catsMap[f.category] || [];
+          catsMap[f.category].push(f);
+        });
+        
+        const catLabels = {
+          "compound_risk": "Compound Risk",
+          "institutional_amnesia": "Institutional Amnesia",
+          "virtual_edge": "Hidden Coupling",
+          "provider_desync": "Provider Desync",
+          "intent_drift": "Intent Drift",
+          "commit_amnesia": "Commit Amnesia",
+          "structural_spof": "Structural SPOF",
+          "no_test_coverage": "No Test Coverage",
+          "high_coupling": "High Coupling"
+        };
+        
+        const catBtnContainer = document.getElementById('audit-sidebar-cats');
+        let catHtml = '';
+        Object.keys(catsMap).forEach((c, idx) => {
+          catHtml += `<div class="audit-category-btn ${idx === 0 ? 'active' : ''}" onclick="selectAuditCategory('${c}', this)">${catLabels[c] || c} (${catsMap[c].length})</div>`;
+        });
+        catBtnContainer.innerHTML = catHtml;
+        
+        const firstCat = Object.keys(catsMap)[0];
+        renderAuditCategoryCards(firstCat, catsMap[firstCat]);
+        window._auditCatsMap = catsMap;
+      } else {
+        document.getElementById('audit-cards-container').innerHTML = '<div class="panel"><p style="color:var(--muted)">No architectural drift findings indexed.</p></div>';
+      }
+      
+      if (LORE_DATA.diff && LORE_DATA.diff.staged_files && LORE_DATA.diff.staged_files.length) {
+        const diffTab = document.getElementById('nav-diff');
+        diffTab.style.display = 'flex';
+        document.getElementById('badge-diff').innerText = LORE_DATA.diff.staged_files.length;
+        document.getElementById('diff-task-name').innerText = LORE_DATA.diff.task;
+        
+        const fileListContainer = document.getElementById('diff-file-list');
+        fileListContainer.innerHTML = LORE_DATA.diff.staged_files.map((f, idx) => `
+          <div class="diff-file-item ${idx === 0 ? 'active' : ''}" id="diff-file-${f.path.replace(/[^a-zA-Z0-9]/g, '_')}" onclick="selectDiffFile('${f.path}')">
+            ${f.path}
+          </div>
+        `).join('');
+        
+        selectDiffFile(LORE_DATA.diff.staged_files[0].path);
+      }
+      
+      if (LORE_DATA.cve) {
+        document.getElementById('nav-cve').style.display = 'flex';
+        if (LORE_DATA.cve.cve_id) {
+          renderSingleCVERetrospective(LORE_DATA.cve);
+        }
+      }
+      
+      if (LORE_DATA.batch) {
+        document.getElementById('nav-batch').style.display = 'flex';
+        renderBatchTable(LORE_DATA.batch);
+      }
+      
+      if (LORE_DATA.mode) {
+        switchTab(LORE_DATA.mode);
+      }
+      
+      if (LORE_DATA.git_backfill) {
+        updateBackfillUI(LORE_DATA.git_backfill);
+        if (LORE_DATA.git_backfill.status === 'running') {
+          startBackfillPolling();
+        }
+      }
+    });
+
+    function updateBackfillUI(bf) {
+      const container = document.getElementById('backfill-progress-container');
+      if (!container) return;
+      if (!bf || bf.status === 'idle' || bf.status === 'completed') {
+        if (bf && bf.status === 'completed') {
+          container.style.display = 'block';
+          container.style.backgroundColor = 'rgba(16, 185, 129, 0.05)';
+          document.getElementById('backfill-title').innerHTML = '<span style="color:var(--emerald)">✓ Mapped History</span>';
+          document.getElementById('backfill-pct').style.color = 'var(--emerald)';
+          document.getElementById('backfill-pct').innerText = '100%';
+          document.getElementById('backfill-bar').style.width = '100%';
+          document.getElementById('backfill-bar').style.backgroundColor = 'var(--emerald)';
+          document.getElementById('backfill-desc').innerText = 'All commits analyzed and indexed.';
+        } else {
+          container.style.display = 'none';
+        }
+        return;
+      }
+      
+      container.style.display = 'block';
+      const pct = bf.progress.percentage || 0;
+      document.getElementById('backfill-pct').innerText = pct + '%';
+      document.getElementById('backfill-bar').style.width = pct + '%';
+      document.getElementById('backfill-desc').innerText = 'Mined ' + (bf.progress.processed || 0) + ' / ' + (bf.progress.total || 0) + ' commits...';
+    }
+    
+    let backfillInterval = null;
+    function startBackfillPolling() {
+      if (backfillInterval) return;
+      backfillInterval = setInterval(() => {
+        fetch('/api/data')
+          .then(res => res.json())
+          .then(data => {
+            updateBackfillUI(data.git_backfill);
+            
+            document.getElementById('stat-files').innerText = data.stats.files || 0;
+            document.getElementById('stat-symbols').innerText = data.stats.symbols || 0;
+            document.getElementById('stat-virtual').innerText = data.stats.virtual_edges || 0;
+            document.getElementById('stat-links').innerText = data.stats.links || 0;
+            
+            document.getElementById('kpi-symbols').innerText = data.stats.symbols || 0;
+            document.getElementById('kpi-links').innerText = data.stats.links || 0;
+            document.getElementById('kpi-hotspots').innerText = data.stats.hotspots || 0;
+            document.getElementById('kpi-virtual').innerText = data.stats.virtual_edges || 0;
+            
+            const complianceBadge = document.getElementById('badge-compliance');
+            complianceBadge.innerText = data.decision_links ? data.decision_links.length : 0;
+            
+            const auditBadge = document.getElementById('badge-audit');
+            auditBadge.innerText = data.findings ? data.findings.length : 0;
+            
+            const logContainer = document.getElementById('intent-logs-list');
+            if (data.commits_reasoning && data.commits_reasoning.length) {
+              logContainer.innerHTML = data.commits_reasoning.map(c => `
+                <div class="commit-card">
+                  <div class="commit-card-header">
+                    <span class="commit-hash">${c.hash}</span>
+                    <span>${c.date.substring(0, 16)} · ${escapeHtml(c.author)}</span>
+                  </div>
+                  <div class="commit-body">${escapeHtml(c.body.substring(0, 200))}${c.body.length > 200 ? '...' : ''}</div>
+                  <div class="commit-files">Touched: ${c.files.slice(0, 3).join(', ')}${c.files.length > 3 ? '...' : ''}</div>
+                </div>
+              `).join('');
+            }
+            
+            if (data.git_backfill.status === 'completed' || data.git_backfill.status === 'failed') {
+              clearInterval(backfillInterval);
+              backfillInterval = null;
+              LORE_DATA.decision_links = data.decision_links;
+              LORE_DATA.findings = data.findings;
+              LORE_DATA.graph = data.graph;
+              LORE_DATA.stats = data.stats;
+              const activeNav = document.querySelector('.nav-item.active');
+              if (activeNav && activeNav.id === 'nav-graph') renderGraph();
+            }
+          })
+          .catch(err => {
+            console.error('Failed to poll backfill progress:', err);
+          });
+      }, 3000);
+    }
+    
+    function selectAuditCategory(cat, btnEl) {
+      document.querySelectorAll('.audit-category-btn').forEach(el => el.classList.remove('active'));
+      btnEl.classList.add('active');
+      renderAuditCategoryCards(cat, window._auditCatsMap[cat]);
+    }
+    
+    function renderAuditCategoryCards(category, items) {
+      const container = document.getElementById('audit-cards-container');
+      const categoryTitles = {
+        "compound_risk": "Compound Risk",
+        "institutional_amnesia": "Institutional Amnesia",
+        "virtual_edge": "Hidden Coupling",
+        "provider_desync": "Provider Desync",
+        "intent_drift": "Intent Drift",
+        "commit_amnesia": "Commit Amnesia",
+        "structural_spof": "Structural SPOF",
+        "no_test_coverage": "No Test Coverage",
+        "high_coupling": "High Coupling"
+      };
+      
+      let html = `<h2 style="font-size: 14px; font-weight: 600; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom:8px">${categoryTitles[category] || category}</h2>`;
+      
+      items.forEach(item => {
+        let badgeCls = 'badge-info';
+        if (item.severity === 'critical') badgeCls = 'badge-critical';
+        else if (item.severity === 'warning') badgeCls = 'badge-warning';
+        
+        let fileLine = '';
+        if (item.file) {
+          fileLine += `<div class="finding-file">${escapeHtml(item.file)}</div>`;
+        }
+        if (item.file_b) {
+          fileLine += `<div class="finding-file" style="margin-left: 8px; background-color: rgba(255,255,255,0.03); color: var(--muted); border: 1px solid var(--border);">${escapeHtml(item.file_b)}</div>`;
+        }
+        
+        html += `
+          <div class="finding-card">
+            <div class="finding-header">
+              <span class="finding-title">${escapeHtml(item.title)}</span>
+              <div style="display:flex; align-items:center; gap:10px">
+                <span class="finding-metric">${escapeHtml(item.metric)}</span>
+                <span class="badge ${badgeCls}">${item.severity}</span>
+              </div>
+            </div>
+            ${fileLine}
+            <p class="finding-desc">${escapeHtml(item.desc)}</p>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+    
+    function renderSingleCVERetrospective(cveData) {
+      const registryEntry = cveData.cfg || {};
+      const stats = cveData.stats || {};
+      
+      const banner = document.getElementById('cve-stats-banner');
+      banner.innerHTML = `
+        <div class="kpi-card">
+          <div class="kpi-label">Detection Score</div>
+          <div class="kpi-value" style="color:${stats.detection_score >= 55 ? 'var(--rose)' : (stats.detection_score >= 35 ? 'var(--amber)' : 'var(--emerald)')}">${stats.detection_score}%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Risk Signal Count</div>
+          <div class="kpi-value">${stats.signals || 0}</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Critical Warnings</div>
+          <div class="kpi-value">${stats.critical || 0}</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Verdict</div>
+          <div class="kpi-value" style="font-size:24px; font-weight:700; color:${stats.detection_score >= 55 ? 'var(--rose)' : (stats.detection_score >= 35 ? 'var(--amber)' : 'var(--emerald)')}">${stats.detection_score >= 55 ? 'ALERT' : (stats.detection_score >= 35 ? 'REVIEW' : 'CLEAR')}</div>
+        </div>
+      `;
+      
+      const sidebar = document.getElementById('cve-sidebar-list');
+      sidebar.innerHTML = `
+        <div class="diff-file-item active" style="font-family:var(--font-sans)">
+          <strong>${cveData.cve_id}</strong>
+          <div style="font-size:10px; color:var(--muted); margin-top:4px">${escapeHtml(registryEntry.name || 'Vulnerability')}</div>
+        </div>
+      `;
+      
+      const main = document.getElementById('cve-main-findings');
+      let factorsHtml = (stats.detection_factors || []).map(f => `
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border)">
+          <span>${escapeHtml(f.label)}</span>
+          <span style="font-weight:600; color:${f.pts > 0 ? 'var(--rose)' : 'var(--muted)'}">${f.pts} pts</span>
+        </div>
+      `).join('');
+      
+      let signalsCards = (cveData.signals || []).map(s => {
+        let badge = s.severity === 'critical' ? 'badge-critical' : 'badge-warning';
+        return `
+          <div class="finding-card">
+            <div class="finding-header">
+              <span class="finding-title" style="color:var(--accent)">${escapeHtml(s.title || 'Signal')}</span>
+              <span class="badge ${badge}">${s.severity}</span>
+            </div>
+            <div class="commit-files" style="margin-bottom:6px">Type: ${escapeHtml(s.type)}</div>
+            <p style="color:var(--muted)">${escapeHtml(s.desc)}</p>
+          </div>
+        `;
+      }).join('');
+      
+      main.innerHTML = `
+        <div class="panel">
+          <div class="panel-title">⚠️ Vulnerability Profile: ${cveData.cve_id}</div>
+          <p style="font-size:13px; line-height:1.6; margin-bottom:16px">${escapeHtml(registryEntry.description || '')}</p>
+          <div style="font-size:12px; color:var(--muted)">
+            <strong>Target Vulnerable Symbols:</strong> ${escapeHtml((registryEntry.vuln_symbols || []).join(', '))}
+          </div>
+        </div>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:24px">
+          <div class="panel">
+            <div class="panel-title">Scoring Matrix</div>
+            ${factorsHtml}
+          </div>
+          <div>
+            <div class="panel-title">Risk Signals</div>
+            ${signalsCards}
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderBatchTable(batchResults) {
+      const tbody = document.getElementById('batch-tbody');
+      tbody.innerHTML = batchResults.map(r => {
+        const score = r.stats.detection_score || 0;
+        const verdict = score >= 55 ? 'ALERT' : (score >= 35 ? 'REVIEW' : 'CLEAR');
+        const color = score >= 55 ? 'var(--rose)' : (score >= 35 ? 'var(--amber)' : 'var(--emerald)');
+        
+        return `
+          <tr>
+            <td>
+              <strong style="color:${color}">${verdict}</strong>
+              <div style="font-size:10px; color:var(--muted); margin-top:2px">${r.cve_id}</div>
+            </td>
+            <td>${escapeHtml(r.project)}</td>
+            <td class="center"><span class="badge badge-critical">${r.stats.critical} critical</span></td>
+            <td><strong>${score}%</strong></td>
+            <td>${escapeHtml(r.stats.signals_summary || 'N/A')}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+  </script>
+</body>
+</html>

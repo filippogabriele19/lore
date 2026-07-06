@@ -1,177 +1,159 @@
-# ASE - Autonomous Software Engineer
+# 🚀 LORE: The Local Institutional Memory Layer for AI Coding Agents
 
-**AI-powered code refactoring engine with context-aware parsing and surgical AST modification.**
+**Stop AI from breaking your architecture. A 5-layer Knowledge Graph & Semantic Firewall for Cursor, Claude, and CI/CD.**
 
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Model Context Protocol](https://img.shields.io/badge/MCP-Supported-green.svg)](https://modelcontextprotocol.io/)
+[![Build Status](https://github.com/lore-agent/lore/actions/workflows/test-and-lint.yml/badge.svg)](https://github.com/lore-agent/lore/actions)
 
 ---
 
-## The Problem
+## 💡 The Problem: AI Code Amnesia
 
-Modern AI coding assistants (Copilot, Cursor, etc.) are great for **writing new code**, but they fail catastrophically at **refactoring existing codebases**:
-- They overwrite files blindly, losing comments and formatting
-- They consume massive token budgets re-indexing the same code
-- They can't safely edit production code in regulated industries (banking, healthcare)
-- They require sending proprietary code to third-party APIs
+AI coding assistants (Cursor, Claude Code, Copilot, Devin) are incredibly good at writing syntax (the *what*), but they are completely blind to architectural intent and history (the *why*):
+- They refactor key endpoints without knowing the performance constraints or GDPR policies behind them.
+- They replace custom authentication schemes with standard ones, breaking compliance rules.
+- They lack context on implicit dependencies and files that always co-evolve (co-changes), leading to silent regressions.
 
-**ASE solves this with a surgical approach**: it parses your codebase into a queryable database, plans changes through a multi-step reasoning pipeline, and patches code at the AST level—preserving your original structure.
-
----
-
-## Why This Is Hard (Technical Edge)
-
-### 1. Hybrid Patching Engine
-ASE doesn't just call `LLM.write(file)`. It uses:
-- **LibCST Transformers** for Python (preserves comments, docstrings, and whitespace)
-- **Fuzzy SEARCH/REPLACE blocks** with tolerance to LLM formatting errors
-- **Semantic deletion** via AST node removal (no regex hacks)
-
-### 2. Token-Efficient Context Building
-Instead of feeding entire files to the LLM every time:
-- Indexes codebase into **SQLite** with symbol-level granularity (functions, classes, imports)
-- Only retrieves relevant entities based on task + dependency graph
-- Tested on 50k+ LOC projects with <10k token context windows
-
-### 3. Three-Phase Planning Pipeline
-**Process 1 (LLM Draft):** Generates initial plan with reasoning and search criteria  
-**Process 2 (Python Enrichment):** Queries DB for real symbols, resolves file paths deterministically  
-**Process 3 (LLM Validation):** Selects entities, validates coherence, calculates impact  
-
-This prevents the "hallucination → apply → break production" loop.
+**When senior architects leave or team size grows, this knowledge debt leads to architectural decay.**
 
 ---
 
-## Quick Start
+## 🎯 The Solution: LORE
 
-### Installation
+LORE reconstructs intent from your codebase evidence—mining git history, commit messages, PRs, Slack/GitHub webhooks, and Architectural Decision Records (ADRs) into a structured **5-layer Knowledge Graph**. 
 
-git clone https://github.com/yourusername/ase.git
-cd ase
-pip install -r requirements.txt
+It serves as a **Semantic Firewall**, exposing this graph via **Model Context Protocol (MCP)** and a **GitHub Action** to guide AI agents and developers *before* they apply breaking changes.
 
-### Configure LLM Provider
-
-export ANTHROPIC_API_KEY="your-key-here"
-export LLM_PROVIDER="anthropic"  # or "ollama" for local
-
-## Basic Workflow
-
-### 1. Index your project
-python ase.py scan .
-
-### 2. Run autonomous refactoring
-python ase.py apply "Extract all database logic into a new repository pattern" --path "." --loop=3
-
-### 3. Review changes in the web UI (auto-opens)
-Approve or discard each file individually
-Example: Real Refactoring Task
-Task: "Move all validation functions from utils.py to a new validators.py file"
-
-What ASE does automatically:
-
-Scans the project and indexes 127 symbols across 23 files
-Plans the extraction (identifies 8 validation functions)
-Generates validators.py with correct imports
-Updates utils.py to remove functions (preserving unrelated code)
-Finds 5 dependent files and patches their imports
-Stages all changes for review
-Human decision: Approve/discard in the UI. No merge conflicts, no broken imports.
-
-# Architecture
-```text
-ase/
-├── core/
-│   ├── engine.py          # Orchestrator (scan → plan → work)
-│   ├── scanner.py         # SQLite indexer + parser factory
-│   ├── planner/           # 3-phase planning pipeline
-│   │   ├── strategies/    # Draft, Enrichment, Validation
-│   │   └── types.py       # Pydantic models for plans
-│   ├── worker/            # Code generation + patching
-│   └── ast_patcher.py     # LibCST/AST manipulation
-├── parsers/               # Language-specific parsers
-│   ├── python_parser.py   # Full AST support
-│   ├── regex_parser.py    # JS/TS/Dart/Go (heuristic)
-│   └── config_parser.py   # JSON/YAML/TOML
-├── llm/                   # LLM abstraction layer
-├── server/                # FastAPI review UI
-└── utils/                 # Visualization (Mermaid graphs)
+```mermaid
+graph TD
+    A[Codebase & Git History] -->|Ingestion & Mining| B[LORE Engine]
+    B -->|Builds| C[5-Layer Knowledge Graph]
+    
+    subgraph Knowledge Graph Layers
+        C1[L1: Structural AST Symbols]
+        C2[L2: Semantic Vector Store sqlite-vec]
+        C3[L3: Historical Co-changes & Hotspots]
+        C4[L4: Decisional Links to ADRs & PRs]
+        C5[L5: Institutional Policy & Conventions]
+    end
+    
+    C --> C1 & C2 & C3 & C4 & C5
+    C -->|Exposes Context| D[Model Context Protocol Server]
+    C -->|Validates Diff| E[LORE Guardian & GitHub Action]
+    
+    D -->|Guide Agent| F[Cursor / Claude Desktop / Claude Code]
+    E -->|Block Breaking PR| G[Pull Request Gatekeeper]
 ```
-# Features
 
-✅ MVP (Available Now)
+---
 
-- Python full AST support (functions, classes, imports)
-- Multi-language indexing (JS, TS, Dart, Go, Rust, PHP)
-- Web-based diff review UI
-- Automatic backup/undo system
-- Interactive dependency graph visualization
-- Anthropic Claude integration
-- Ollama support (experimental)
+## ⚡ Quick Start: Experience LORE in 60 Seconds
 
-🚧 In Progress
+### 1. Install LORE
+```bash
+pip install lore-agent
+```
 
-- Local LLM fine-tuning for enterprise privacy
-- Java/C#/COBOL parsing (Tree-sitter integration)
-- CI/CD integration (GitHub Actions, GitLab)
-- Multi-file transaction rollback
-- Permissions/policy engine for regulated industries
+### 2. Initialize Workspace & Index Codebase
+Run the bootstrap helper inside your repository to scan files and extract git historical intent:
+```bash
+lore init .
+```
 
-# Use Cases
+### 3. Query the Knowledge Graph
+Ask questions about why the codebase is structured the way it is:
+```bash
+lore query "Why did we replace JWT with opaque tokens in auth.py?"
+```
 
-## Startups
+---
 
-Rapid prototyping with AI, then refactor safely as codebase grows
-Migrate legacy code without breaking production
+## ⚖️ What Makes LORE Different?
 
-## Enterprises
+| Feature | Standard RAG / Code Search | AI IDE / Assistants | LORE |
+| :--- | :---: | :---: | :---: |
+| **AST Symbol Resolution** | ❌ (reads text chunks) | ❌ (raw file contents) | **✅ Full L1-L2 AST Graph** |
+| **Understand *Why* (ADRs)** | ❌ | ❌ | **✅ L4 Decisional Linking** |
+| **Co-Change Mapping** | ❌ | ❌ | **✅ Tracks Virtual Edges** |
+| **AI Compliance Gate** | ❌ | ❌ | **✅ Pre-commit / CI/CD Firewall** |
+| **Offline Vector Search** | ❌ (cloud dependency) | ❌ | **✅ Local via `sqlite-vec` (C)** |
 
-Banking/Healthcare: Refactor mainframe COBOL with local LLMs (no API calls)
-Large codebases: 100k+ LOC projects where manual refactoring is infeasible
-Compliance: Audit trail via .ase/history/ for every change
+---
 
-# Why Build This?
+## 🛠️ MCP Integration: Powering your AI Assistant
 
-I'm a software engineer and quant trader. 
-The insight: LLMs are great at generating code, but terrible at changing existing large systems. They don't understand context, they don't preserve intent, and they don't work in environments where you can't send code to OpenAI's servers.
-ASE is designed to be the missing layer between "AI writes a function" and "AI refactors your entire codebase without human supervision."
+LORE exposes **10 specialized MCP tools** (including `lore_trace_taint`, `lore_comply_and_apply`, and `lore_get_architecture_constraints`) to prevent AI models from making uninformed edits.
 
-# Roadmap
+### Integration with Cursor
+1. Go to **Settings** -> **Features** -> **MCP**.
+2. Click **+ Add New MCP Server**.
+3. Configure:
+   - **Name**: `LORE`
+   - **Type**: `command`
+   - **Command**: `python -m cli.mcp_server` (or absolute path to your virtual environment interpreter)
 
-## Q1 2026:
+### Integration with Claude Desktop
+Add LORE to your `claude_desktop_config.json`:
+```json
+{
+  "mcpServers": {
+    "lore": {
+      "command": "python",
+      "args": [
+        "path/to/lore/lore.py",
+        "mcp"
+      ],
+      "env": {
+        "PYTHONPATH": "path/to/lore"
+      }
+    }
+  }
+}
+```
 
-Local LLM benchmarking (Qwen, DeepSeek, Llama)
-Tree-sitter parsers for Java/C#
-VSCode extension
+---
 
-## Q2 2026:
+## 🛡️ GitHub Action: The Semantic Pull Request Firewall
 
-Enterprise licensing with RBAC
-GraphRAG integration for cross-repo refactoring
-Synthetic data generation for fine-tuning
+Integrate LORE Guardian into your CI/CD pipeline to automatically validate diffs against your semantic contracts:
 
-## Long-term vision:
+```yaml
+# .github/workflows/lore-audit.yml
+name: LORE Security & Architecture Guard
 
-ASE becomes the "autopilot for legacy code modernization"—a tool that lets one engineer safely refactor what used to require a team of 10.
+on:
+  pull_request:
+    branches: [ main ]
 
-Contributing
-This is an open-source MVP. If you want to:
+jobs:
+  lore-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for git mining
 
-Add support for a new language parser
+      - name: Run LORE Firewall
+        uses: lore-agent/lore-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          project: '.'
+```
 
-Improve LLM prompts
+Whenever an agent or developer submits a PR that violates an active architectural rule, the LORE Action blocks the PR and comments on GitHub with the exact decision context:
+> ❌ **PR BLOCKED by LORE Guardian**
+>
+> *The proposed change in `auth_handler.go` violates the architectural rule **ADR-042** (Opaque session tokens must be used instead of JWTs).*
+>
+> **Reason**: Compliance GDPR audit trails require session tokens to be revocable server-side.
+> *Defined on 2025-11-03 in commit f8a21bc.*
 
-Test on large codebases
+---
 
-Open an issue or PR. The codebase is intentionally modular (see parsers/ and llm/ abstractions).
+## 📜 Contributing & License
 
-License
-MIT License. See LICENSE for details.
+For development setup instructions, please read [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Contact
-Building something similar? Want to collaborate?
-Reach out: filippogabriele19@gmail.com
-
-# Applying to Y Combinator W26 batch.
-
-ASE is not just a tool—it's a bet that the next wave of software productivity comes from AI that can safely modify existing systems, not just generate new ones.
+LORE is open-source software licensed under the [MIT License](LICENSE).

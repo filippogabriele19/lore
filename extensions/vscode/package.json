@@ -1,0 +1,88 @@
+{
+  "name": "lore-lens",
+  "displayName": "LORE Lens",
+  "description": "LORE AI Software Engineer Agent - IDE Companion",
+  "version": "1.5.0",
+  "publisher": "lore-ai",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Formatters"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "lore-sidebar",
+          "title": "LORE",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "lore-sidebar": [
+        {
+          "type": "webview",
+          "id": "lore-explorer",
+          "name": "LORE Developer Console"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "lore.startLSP",
+        "title": "LORE: Start LSP Server",
+        "category": "LORE"
+      },
+      {
+        "command": "lore.stopLSP",
+        "title": "LORE: Stop LSP Server",
+        "category": "LORE"
+      },
+      {
+        "command": "lore.restartLSP",
+        "title": "LORE: Restart LSP Server",
+        "category": "LORE"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "LORE Configuration",
+      "properties": {
+        "lore.pythonPath": {
+          "type": "string",
+          "default": "",
+          "description": "Custom path to the python executable. If empty, auto-detects from workspace venv."
+        },
+        "lore.trace.server": {
+          "type": "string",
+          "default": "off",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "description": "Traces the communication between VS Code and the LORE LSP server."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "@types/vscode": "^1.75.0",
+    "typescript": "^5.0.4"
+  }
+}

@@ -31,10 +31,11 @@ ENV/
 pip-log.txt
 pip-delete-this-directory.txt
 
-# --- ASE Project Specific ---
-# Exclude the internal ASE database and state folder
-.ase/
-!/.ase/.keep  # (Optional: if you want to keep the folder structure but not content)
+# --- LORE Project Specific ---
+# Exclude the internal LORE database and state folder
+.lore/
+_scan_targets/
+!/.lore/.keep  # (Optional: if you want to keep the folder structure but not content)
 *.db
 *.sqlite3
 
@@ -55,6 +56,13 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
+# --- Node Modules / Frontend ---
+node_modules/
+dist-extension/
+out/
+*.vsix
+
+
 # --- Logs & Debug ---
 *.log
 debug_*.csv
@@ -72,3 +80,17 @@ htmlcov/
 .env
 .env.local
 .env.*.local
+
+# --- LORE Temporary and Archive Files ---
+LORE.tar.gz
+LORE.zip
+come_aprire_ubuntu.txt
+temp_agent.txt
+migration_history.md
+scratch/
+.claude/
+.continue/
+*.log
+*.db-shm
+*.db-wal
+

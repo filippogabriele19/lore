@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Lore Vulnerability — {{CVE_ID}}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#F1F5F9;color:#1E293B;min-height:100vh}
+.wrap{max-width:980px;margin:0 auto;padding:32px 24px}
+.hdr{background:#0F172A;border-radius:12px;padding:28px 32px;margin-bottom:24px;color:#fff}
+.cve-badge{display:inline-block;background:#EF4444;color:#fff;font-size:12px;font-weight:700;
+  letter-spacing:.08em;padding:3px 10px;border-radius:4px;margin-bottom:10px}
+.cve-name{font-family:'Fraunces',serif;font-size:34px;font-weight:700;color:#fff;margin-bottom:6px}
+.cve-desc{font-size:14px;color:#94A3B8;line-height:1.6;max-width:680px}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.kpi{background:#fff;border-radius:10px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.kpi-val{font-family:'Fraunces',serif;font-size:36px;font-weight:700}
+.kpi-lbl{font-size:12px;color:#64748B;margin-top:4px;font-weight:500}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.panel{background:#fff;border-radius:10px;padding:20px 22px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.panel-title{font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase;
+  color:#64748B;margin-bottom:14px}
+.verdict-box{background:#fff;border-radius:10px;padding:22px 24px;
+  border-left:5px solid {{VERDICT_COLOR}};box-shadow:0 1px 3px rgba(0,0,0,.07);margin-bottom:24px}
+.verdict-label{font-size:12px;font-weight:700;color:{{VERDICT_COLOR}};text-transform:uppercase;letter-spacing:.06em}
+.verdict-text{font-family:'Fraunces',serif;font-size:22px;font-weight:700;margin:6px 0 8px;color:#0F172A}
+.verdict-sub{font-size:13px;color:#475569;line-height:1.5}
+.detect-bar-bg{background:#E2E8F0;border-radius:99px;height:8px;margin:10px 0 4px}
+.detect-bar{background:{{VERDICT_COLOR}};border-radius:99px;height:8px;width:0;
+  transition:width .8s ease}
+.signals-title{font-weight:700;font-size:16px;margin-bottom:16px;color:#0F172A}
+table{border-collapse:collapse;width:100%}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hdr">
+    <div class="cve-badge">{{SEVERITY}} &nbsp;CVSS {{CVSS_SCORE}}</div>
+    <div class="cve-name">{{CVE_ID}} &mdash; {{NAME}}</div>
+    <div class="cve-desc">{{DESCRIPTION}}</div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-val" style="color:#EF4444">{{TOTAL_BLAST}}</div>
+      <div class="kpi-lbl">File nel blast radius</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val" style="color:#8B5CF6">{{CRITICAL_COUNT}}</div>
+      <div class="kpi-lbl">Segnali critici</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val" style="color:#F59E0B">{{WARN_COUNT}}</div>
+      <div class="kpi-lbl">Warning pre-CVE</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val" style="color:{{VERDICT_COLOR}}">{{DETECTION_PCT}}%</div>
+      <div class="kpi-lbl">Prob. detection</div>
+    </div>
+  </div>
+
+  <div class="verdict-box">
+    <div class="verdict-label">Verdetto Lore Vulnerability &mdash; <span style="font-weight:800">{{VERDICT_LABEL_TAG}}</span></div>
+    <div class="verdict-text">{{VERDICT_TEXT}}</div>
+    <div class="detect-bar-bg"><div class="detect-bar" id="dbar"></div></div>
+    <div class="verdict-sub" style="margin-bottom:14px">
+      Il Knowledge Graph conteneva <strong>{{SIGNALS_COUNT}} segnali pre-CVE</strong>
+      ({{CRITICAL_COUNT}} critici, {{WARN_COUNT}} warning) nel repository <em>{{PROJECT_NAME}}</em>
+      prima della disclosure. Soglia alert: {{ALERT_THRESHOLD}} punti
+      (calibrata su 2 CVE; richiede validazione su &ge;10 CVE per uso in produzione).
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <tr style="border-bottom:1px solid #E2E8F0">
+        <th style="text-align:left;color:#64748B;padding:4px 8px 4px 0;font-weight:600">Fattore</th>
+        <th style="text-align:right;color:#64748B;padding:4px 0;font-weight:600;width:48px">Punti</th>
+        <th style="text-align:left;color:#64748B;padding:4px 0 4px 12px;font-weight:600">Evidenza</th>
+      </tr>
+      {{FACTORS_ROWS}}
+      <tr style="border-top:2px solid #CBD5E1">
+        <td style="padding-top:6px;font-weight:700;color:#0F172A">Totale</td>
+        <td style="text-align:right;font-family:monospace;font-weight:700;color:{{VERDICT_COLOR}};padding-top:6px">{{DETECTION_PCT}}</td>
+        <td style="padding:6px 0 0 12px;color:#64748B;font-size:11px">su 100 (capped a 97 per non-overfit)</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-title">Decisione A — il protocollo 'lc' key</div>
+      <p style="font-size:13px;color:#475569;line-height:1.6">{{DECISION_A}}</p>
+      <div style="margin-top:12px;padding:10px 12px;background:#F0FDF4;border-radius:6px;
+        border-left:3px solid #22C55E;font-size:12px;color:#166534">
+        <strong>Fix Lore:</strong> aggiungere un decision link su <code>dumpd()</code>:
+        "lc key e' un marker riservato — user input DEVE essere sanitizzato prima di passarlo al serializer"
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Decisione B — secrets_from_env=True default</div>
+      <p style="font-size:13px;color:#475569;line-height:1.6">{{DECISION_B}}</p>
+      <div style="margin-top:12px;padding:10px 12px;background:#FEF2F2;border-radius:6px;
+        border-left:3px solid #EF4444;font-size:12px;color:#991B1B">
+        <strong>Commit colpevole:</strong> <code>38ec48a7</code> (2024-03-26, Nuno Campos)<br>
+        Il commit <code>cfecbda4</code> del giorno dopo (2024-03-27) riconosceva
+        <em>allow_dangerous_deserialization</em> per pickle ma non ha esteso
+        lo stesso ragionamento a <code>dumps()</code>/<code>loads()</code>.
+        Intent-Implementation Delta: alto.
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:24px">
+    <div class="panel-title">Blast Radius — chi chiama le funzioni vulnerabili</div>
+    <table>
+      <tr>
+        <th style="text-align:left;font-size:12px;color:#64748B;padding-bottom:8px">Funzione</th>
+        <th style="text-align:left;font-size:12px;color:#64748B;padding-bottom:8px">File dipendenti</th>
+      </tr>
+      {{BR_ROWS}}
+      <tr><td colspan="2" style="padding-top:8px;font-size:12px;color:#94A3B8">
+        (esclusi file di test — impatto produzione)
+      </td></tr>
+    </table>
+  </div>
+
+  <div class="signals-title">Segnali pre-CVE nel Knowledge Graph ({{SIGNALS_TOTAL_COUNT}} totali)</div>
+  {{CARDS_HTML}}
+
+  <div style="margin-top:24px;padding:16px 20px;background:#fff;border-radius:10px;
+    font-size:12px;color:#94A3B8;box-shadow:0 1px 3px rgba(0,0,0,.07)">
+    Lore Vulnerability &mdash; {{PROJECT_NAME}} &mdash; {{CVE_ID}} &mdash; {{NAME}}
+    &mdash; {{TOTAL_SYMBOLS}} simboli indicizzati &mdash; {{TOTAL_COMMITS}} commit analizzati
+  </div>
+</div>
+<script>
+  setTimeout(function(){
+    var b = document.getElementById('dbar');
+    if(b) b.style.width='{{DETECTION_PCT}}%';
+  }, 300);
+</script>
+</body></html>
