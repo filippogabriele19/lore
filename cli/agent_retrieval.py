@@ -14,7 +14,7 @@ def _get_embed_model():
     try:
         from sentence_transformers import SentenceTransformer
         _embed_model = SentenceTransformer("all-MiniLM-L6-v2")
-    except ImportError:
+    except Exception:
         pass
     return _embed_model
 

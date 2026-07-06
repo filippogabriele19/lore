@@ -232,7 +232,11 @@ def links_from_adr_semantic(conn: sqlite3.Connection, project_root: Path) -> int
     if not md_files:
         return 0
 
-    model = SentenceTransformer("all-MiniLM-L6-v2")
+    try:
+        model = SentenceTransformer("all-MiniLM-L6-v2")
+    except Exception as e:
+        logger.debug(f"M3 semantic ADR skipped: failed to initialize SentenceTransformer ({e})")
+        return 0
     count = 0
 
     for md_file in md_files:

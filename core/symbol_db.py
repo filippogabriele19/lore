@@ -517,7 +517,7 @@ class SymbolDB:
         if not rows:
             return []
             
-        task_words = set(task_description.lower().split()) - {
+        task_words = set(task_description.lower().replace("_", " ").split()) - {
             "the", "and", "for", "all", "add", "with", "that", "this", "from", "are", "was", "to", "in", "of"
         }
         scored = []

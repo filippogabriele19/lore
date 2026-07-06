@@ -87,7 +87,12 @@ def embed_all_symbols(db: SymbolDB, project_root: Path) -> int:
     if not rows:
         return 0
 
-    model = SentenceTransformer("all-MiniLM-L6-v2")
+    try:
+        model = SentenceTransformer("all-MiniLM-L6-v2")
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).debug(f"Symbol scanning embedding skipped: failed to initialize SentenceTransformer ({e})")
+        return 0
 
     texts: list[str] = []
     ids:   list[int] = []
