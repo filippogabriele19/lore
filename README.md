@@ -5,7 +5,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Model Context Protocol](https://img.shields.io/badge/MCP-Supported-green.svg)](https://modelcontextprotocol.io/)
-[![Build Status](https://github.com/lore-agent/lore/actions/workflows/test-and-lint.yml/badge.svg)](https://github.com/lore-agent/lore/actions)
+[![Build Status](https://github.com/filippogabriele19/lore/actions/workflows/test-and-lint.yml/badge.svg)](https://github.com/filippogabriele19/lore/actions)
 
 ---
 
@@ -53,7 +53,7 @@ graph TD
 
 ### 1. Install LORE
 ```bash
-pip install lore-agent
+pip install lore
 ```
 
 ### 2. Initialize Workspace & Index Codebase
@@ -136,7 +136,7 @@ jobs:
           fetch-depth: 0 # Fetch all history for git mining
 
       - name: Run LORE Firewall
-        uses: lore-agent/lore-action@v1
+        uses: filippogabriele19/lore-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           project: '.'

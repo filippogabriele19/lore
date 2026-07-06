@@ -6,7 +6,7 @@ We welcome contributions from the open-source community! Here is how you can hel
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/lore-agent/lore.git
+   git clone https://github.com/filippogabriele19/lore.git
    cd lore
    ```
 
