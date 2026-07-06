@@ -28,7 +28,14 @@ It serves as a **Semantic Firewall**, exposing this graph via **Model Context Pr
 
 ```mermaid
 graph TD
-    A[Codebase & Git History] -->|Ingestion & Mining| B[LORE Engine]
+    subgraph Evidence Sources
+        A1[Codebase & Git History]
+        A2[GitHub PRs & Issues]
+        A3[Slack / Discord Chat logs]
+        A4[Jira / Linear Tasks WIP]
+    end
+    
+    A1 & A2 & A3 & A4 -->|Ingestion & Mining| B[LORE Engine]
     B -->|Builds| C[5-Layer Knowledge Graph]
     
     subgraph Knowledge Graph Layers
