@@ -30,8 +30,8 @@ It serves as a **Semantic Firewall**, exposing this graph via **Model Context Pr
 graph TD
     subgraph Evidence Sources
         A1[Codebase & Git History]
-        A2[GitHub PRs & Issues (Webhooks & CLI)]
-        A3[Slack Channel Chat logs (Webhooks & CLI)]
+        A2["GitHub PRs & Issues (Webhooks & CLI)"]
+        A3["Slack Channel Chat logs (Webhooks & CLI)"]
     end
     
     A1 & A2 & A3 -->|Ingestion & Mining| B[LORE Engine]
