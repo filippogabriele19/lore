@@ -63,10 +63,16 @@ pip install git+https://github.com/filippogabriele19/lore.git
 ```
 
 ### 2. Initialize Workspace & Index Codebase
-Run the bootstrap helper inside your repository to scan files and extract git historical intent:
+Set your LLM API key (e.g. Anthropic, OpenAI, DeepSeek, or OpenRouter):
+```bash
+export ANTHROPIC_API_KEY="your-api-key"
+```
+
+Then, run the bootstrap helper inside your repository to scan files and build your Knowledge Graph:
 ```bash
 lore init .
 ```
+*(If run interactively, LORE provides a guided console helper to set up your preferred provider and save keys securely in a local `.env` file).*
 
 ### 3. Query the Knowledge Graph
 Ask questions about why the codebase is structured the way it is:
