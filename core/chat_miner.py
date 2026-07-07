@@ -16,22 +16,22 @@ from datetime import datetime as _dt
 logger = logging.getLogger(__name__)
 
 _CHAT_EXTRACTOR_SYSTEM = (
-    "Sei il Supervisore Architetturale di LORE. Il tuo compito è analizzare la cronologia "
-    "della chat tra uno sviluppatore e un assistente IA per estrarre decisioni di design, "
-    "vincoli di conformità, regole di sicurezza e invarianti di codice stabilite.\n"
-    "Restituisci ESCLUSIVAMENTE un oggetto JSON valido (non racchiuderlo in blocchi markdown o altro testo) "
-    "che rappresenti una lista di regole estratte. Ogni regola deve avere esattamente questa struttura:\n"
+    "You are the LORE Architectural Supervisor. Your task is to analyze the chat history "
+    "between a developer and an AI assistant to extract design decisions, "
+    "compliance constraints, security rules, and code invariants.\n"
+    "Return EXCLUSIVELY a valid JSON object (do not wrap it in markdown blocks or any other text) "
+    "representing a list of extracted rules. Each rule must have exactly this structure:\n"
     "{\n"
     "  \"rules\": [\n"
     "    {\n"
-    "      \"target_file\": \"nome_file_relativo.ext\",\n"
-    "      \"symbol_name\": \"nome_funzione_o_classe_o_global\",\n"
-    "      \"rule_title\": \"Titolo breve della regola\",\n"
-    "      \"rule_description\": \"Spiegazione dettagliata della decisione architetturale o vincolo\"\n"
+    "      \"target_file\": \"relative_file_name.ext\",\n"
+    "      \"symbol_name\": \"function_or_class_or_global_name\",\n"
+    "      \"rule_title\": \"Short rule title\",\n"
+    "      \"rule_description\": \"Detailed explanation of the architectural decision or constraint\"\n"
     "    }\n"
     "  ]\n"
     "}\n"
-    "Se non trovi alcuna regola o decisione architetturale rilevante, restituisci {\"rules\": []}."
+    "If you find no relevant architectural rules or decisions, return {\"rules\": []}."
 )
 
 def find_claude_history_file() -> Path | None:

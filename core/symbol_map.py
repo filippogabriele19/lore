@@ -42,7 +42,7 @@ def print_block(block: dict):
                     print(f"               > {d['signature'].strip()}")
 
         if lazy:
-            print(f"\n--- DEPENDS ON — LAZY ({len(lazy)}) — usa 'frontier <nome>' per espandere ---")
+            print(f"\n--- DEPENDS ON — LAZY ({len(lazy)}) — use 'frontier <name>' to expand ---")
             for d in lazy:
                 loc = f"  @ {d['location']}" if d["location"] else ""
                 print(f"  [{d['type']:14s}] {d['name']:35s} [{d['size']} righe]{loc}")

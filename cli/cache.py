@@ -57,7 +57,7 @@ def restore_or_create_db(project_root: Path, db_path: Path, rescan: bool = False
 
     # Handle force rescan request
     if rescan:
-        console.print("[warning]Rescan forzato richiesto. Rimozione indici esistenti...[/]")
+        console.print("[warning]Forced rescan requested. Removing existing indices...[/]")
         if db_path.exists():
             try:
                 db_path.unlink()
@@ -81,7 +81,7 @@ def restore_or_create_db(project_root: Path, db_path: Path, rescan: bool = False
             pass
             
         if commit_hash and db_commit == commit_hash:
-            console.print(f"[success]✔[/] [bold blue]Knowledge Graph:[/] Database locale è già allineato al commit [bold cyan]{commit_hash[:8]}[/].")
+            console.print(f"[success]✔[/] [bold blue]Knowledge Graph:[/] Local database is already aligned with commit [bold cyan]{commit_hash[:8]}[/].")
             return db
             
         # If commits differ, attempt incremental update on the existing local DB
@@ -89,18 +89,18 @@ def restore_or_create_db(project_root: Path, db_path: Path, rescan: bool = False
             diff_str = _run_git(["diff", "--name-only", db_commit, commit_hash], project_root)
             if diff_str is not None:
                 changed_files = [line.strip() for line in diff_str.splitlines() if line.strip()]
-                console.print(f"[info]Rilevate differenze tra commit locale ({db_commit[:8]}) e HEAD ({commit_hash[:8]}).[/]")
-                console.print(f"[info]Aggiornamento incrementale di {len(changed_files)} file...[/]")
+                console.print(f"[info]Detected differences between local commit ({db_commit[:8]}) and HEAD ({commit_hash[:8]}).[/]")
+                console.print(f"[info]Incremental update of {len(changed_files)} files...[/]")
                 
-                with console.status("[accent]Aggiornamento incrementale AST...[/]") as status:
+                with console.status("[accent]Incremental AST update...[/]") as status:
                     scan_files(db, project_root, changed_files)
-                with console.status("[accent]Aggiornamento embedding semantici...[/]") as status:
+                with console.status("[accent]Semantic embeddings update...[/]") as status:
                     embedded = embed_all_symbols(db, project_root)
                     
                 if embedded:
-                    console.print(f"[success]Aggiornamento completato! Generati {embedded} nuovi embedding.[/]")
+                    console.print(f"[success]Update completed! Generated {embedded} new embeddings.[/]")
                 else:
-                    console.print("[success]Tutti i simboli sono aggiornati.[/]")
+                    console.print("[success]All symbols are up to date.[/]")
                 
                 db.set_meta("last_commit_hash", commit_hash)
                 db.commit()
@@ -126,11 +126,10 @@ def restore_or_create_db(project_root: Path, db_path: Path, rescan: bool = False
     # 3. Cache search (exact hit)
     if exact_cache_file and exact_cache_file.exists():
         try:
-            shutil.copy2(exact_cache_file, db_path)
-            console.print(f"[success]✔ Cache Hit![/] Ripristinato database pre-indicizzato per il commit [bold cyan]{commit_hash[:8]}[/].")
+            console.print(f"[success]✔ Cache Hit![/] Restored pre-indexed database for commit [bold cyan]{commit_hash[:8]}[/].")
             return SymbolDB(db_path)
         except Exception as e:
-            console.print(f"[warning]Impossibile caricare il database da cache: {e}. Ricostruzione in corso...[/]")
+            console.print(f"[warning]Failed to load database from cache: {e}. Rebuilding...[/]")
 
     # 4. Cache search (closest/nearby commit hit)
     if commit_hash:
@@ -180,13 +179,13 @@ def restore_or_create_db(project_root: Path, db_path: Path, rescan: bool = False
                     try:
                         shutil.copy2(best_candidate_path, db_path)
                         dist_lbl = f"distanza: {best_distance} commit" if best_distance < 999999 else "commit non-lineare"
-                        console.print(f"[success]✔ Cache Hit (vicino)![/] Copiato database dal commit [bold yellow]{best_hash[:8]}[/] ({dist_lbl}).")
-                        console.print(f"[info]Applicazione incrementale delle modifiche per {len(changed_files)} file cambiati...[/]")
+                        console.print(f"[success]✔ Cache Hit (nearby)![/] Copied database from commit [bold yellow]{best_hash[:8]}[/] ({dist_lbl}).")
+                        console.print(f"[info]Applying incremental changes for {len(changed_files)} modified files...[/]")
                         
                         db = SymbolDB(db_path)
-                        with console.status("[accent]Aggiornamento incrementale AST...[/]") as status:
+                        with console.status("[accent]Incremental AST update...[/]") as status:
                             scan_files(db, project_root, changed_files)
-                        with console.status("[accent]Aggiornamento embedding semantici...[/]") as status:
+                        with console.status("[accent]Semantic embeddings update...[/]") as status:
                             embedded = embed_all_symbols(db, project_root)
                         
                         db.set_meta("last_commit_hash", commit_hash)
@@ -201,7 +200,7 @@ def restore_or_create_db(project_root: Path, db_path: Path, rescan: bool = False
                             
                         return SymbolDB(db_path)
                     except Exception as e:
-                        console.print(f"[warning]Aggiornamento incrementale da cache fallito: {e}. Ricostruzione completa...[/]")
+                        console.print(f"[warning]Incremental update from cache failed: {e}. Rebuilding full database...[/]")
                         if db_path.exists():
                             try:
                                 db_path.unlink()
@@ -209,12 +208,12 @@ def restore_or_create_db(project_root: Path, db_path: Path, rescan: bool = False
                                 pass
 
     # 5. Full build (Cache Miss)
-    console.print("[warning]Nessun database indicizzato in cache. Avvio indicizzazione completa (solo la prima volta per questo repository)...[/]")
+    console.print("[warning]No cached database found. Starting full indexing (only done once for this repository)...[/]")
     db = SymbolDB(db_path)
     
-    with console.status("[accent]Scansione e parsing AST in corso...[/]") as status:
+    with console.status("[accent]Scanning and parsing AST...[/]") as status:
         fow_scan(project_root, db)
-    with console.status("[accent]Generazione embedding semantici in corso...[/]") as status:
+    with console.status("[accent]Generating semantic embeddings...[/]") as status:
         embedded = embed_all_symbols(db, project_root)
     
     if commit_hash:
@@ -225,13 +224,13 @@ def restore_or_create_db(project_root: Path, db_path: Path, rescan: bool = False
         # Save to cache
         try:
             shutil.copy2(db_path, exact_cache_file)
-            console.print(f"[info]Database dei simboli grezzo salvato in cache per il commit {commit_hash[:8]}.[/]")
+            console.print(f"[info]Raw symbol database cached for commit {commit_hash[:8]}.[/]")
         except Exception as e:
-            console.print(f"[warning]Impossibile salvare il database in cache: {e}[/]")
+            console.print(f"[warning]Failed to save database to cache: {e}[/]")
             
         db = SymbolDB(db_path)
         
-    console.print(f"[success]Indicizzazione iniziale completata! Generati {embedded} embedding.[/]")
+    console.print(f"[success]Initial indexing completed! Generated {embedded} embeddings.[/]")
     return db
 
 def save_db_to_cache(project_root: Path, db_path: Path) -> None:
@@ -251,6 +250,6 @@ def save_db_to_cache(project_root: Path, db_path: Path) -> None:
     if exact_cache_file:
         try:
             shutil.copy2(db_path, exact_cache_file)
-            console.print(f"[success]✔ Cache Aggiornata![/] Database con metadati git e intenti salvato per il commit [bold cyan]{commit_hash[:8]}[/].")
+            console.print(f"[success]✔ Cache Updated![/], Database with git metadata and intents saved for commit [bold cyan]{commit_hash[:8]}[/].")
         except Exception as e:
-            console.print(f"[warning]Impossibile aggiornare il database in cache: {e}[/]")
+            console.print(f"[warning]Failed to update database in cache: {e}[/]")

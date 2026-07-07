@@ -30,12 +30,11 @@ It serves as a **Semantic Firewall**, exposing this graph via **Model Context Pr
 graph TD
     subgraph Evidence Sources
         A1[Codebase & Git History]
-        A2[GitHub PRs & Issues]
-        A3[Slack / Discord Chat logs]
-        A4[Jira / Linear Tasks WIP]
+        A2[GitHub PRs & Issues (Webhooks & CLI)]
+        A3[Slack Channel Chat logs (Webhooks & CLI)]
     end
     
-    A1 & A2 & A3 & A4 -->|Ingestion & Mining| B[LORE Engine]
+    A1 & A2 & A3 -->|Ingestion & Mining| B[LORE Engine]
     B -->|Builds| C[5-Layer Knowledge Graph]
     
     subgraph Knowledge Graph Layers
@@ -60,7 +59,7 @@ graph TD
 
 ### 1. Install LORE
 ```bash
-pip install lore
+pip install git+https://github.com/filippogabriele19/lore.git
 ```
 
 ### 2. Initialize Workspace & Index Codebase

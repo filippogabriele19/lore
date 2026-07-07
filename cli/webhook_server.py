@@ -28,36 +28,36 @@ app = FastAPI(
 # Shared project root configuration (set when server starts)
 _PROJECT_ROOT: Path = Path(DEFAULT_PROJECT)
 
-_GITHUB_EXTRACTOR_SYSTEM = """Sei il Supervisore Architetturale di LORE. Ricevi i dettagli di una Pull Request unita (titolo, descrizione, file modificati).
-Il tuo compito è analizzare il testo per estrarre decisioni di design, vincoli di conformità, regole di sicurezza o invarianti strutturali stabilite.
-Restituisci ESCLUSIVAMENTE un oggetto JSON valido (non racchiuderlo in blocchi markdown o altro testo) con questa struttura:
+_GITHUB_EXTRACTOR_SYSTEM = """You are the LORE Architectural Supervisor. You receive the details of a merged Pull Request (title, description, modified files).
+Your task is to analyze the text to extract design decisions, compliance constraints, security rules, or structural invariants established.
+Return EXCLUSIVELY a valid JSON object (do not wrap it in markdown blocks or any other text) with this structure:
 {
   "rules": [
     {
-      "target_file": "nome_file_relativo.ext",
-      "symbol_name": "nome_funzione_o_classe_o_global",
-      "rule_title": "Titolo breve della regola",
-      "rule_description": "Spiegazione dettagliata della decisione o vincolo"
+      "target_file": "relative_file_name.ext",
+      "symbol_name": "function_or_class_or_global_name",
+      "rule_title": "Short rule title",
+      "rule_description": "Detailed explanation of the decision or constraint"
     }
   ]
 }
-Se non trovi alcuna regola architetturale o vincolo rilevante, restituisci {"rules": []}.
+If you find no relevant architectural rules or constraints, return {"rules": []}.
 """
 
-_SLACK_EXTRACTOR_SYSTEM = """Sei il Supervisore Architetturale di LORE. Ricevi un messaggio o conversazione da Slack.
-Il tuo compito è analizzare il testo per estrarre decisioni di design, vincoli di conformità, regole di sicurezza o invarianti strutturali concordate dal team.
-Restituisci ESCLUSIVAMENTE un oggetto JSON valido (non racchiuderlo in blocchi markdown o altro testo) con questa struttura:
+_SLACK_EXTRACTOR_SYSTEM = """You are the LORE Architectural Supervisor. You receive a message or conversation from Slack.
+Your task is to analyze the text to extract design decisions, compliance constraints, security rules, or structural invariants agreed upon by the team.
+Return EXCLUSIVELY a valid JSON object (do not wrap it in markdown blocks or any other text) with this structure:
 {
   "rules": [
     {
-      "target_file": "nome_file_relativo.ext",
-      "symbol_name": "nome_funzione_o_classe_o_global",
-      "rule_title": "Titolo breve della regola",
-      "rule_description": "Spiegazione dettagliata della decisione o vincolo"
+      "target_file": "relative_file_name.ext",
+      "symbol_name": "function_or_class_or_global_name",
+      "rule_title": "Short rule title",
+      "rule_description": "Detailed explanation of the decision or constraint"
     }
   ]
 }
-Se non trovi alcuna regola o decisione rilevante, restituisci {"rules": []}.
+If you find no relevant rules or decisions, return {"rules": []}.
 """
 
 def _extract_and_register_rules(system_prompt: str, text_content: str) -> int:
