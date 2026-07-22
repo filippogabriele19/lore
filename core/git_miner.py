@@ -7,6 +7,7 @@ import sqlite3
 import json
 import subprocess
 import logging
+import re
 from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -64,6 +65,8 @@ class GitMiner:
                 print(f"  [GIT]  backfilled diffs: {backfilled} commits")
             print(f"  [GIT]  co-change analysis...")
             self._mine_co_changes(conn)
+            print(f"  [GIT]  symbol co-change analysis...")
+            self._mine_symbol_co_changes(conn)
             print(f"  [GIT]  building virtual edges...")
             ve_count = self._build_virtual_edges(conn)
             print(f"  [GIT]  virtual edges: {ve_count} · computing hotspots...")
@@ -335,6 +338,19 @@ class GitMiner:
                 UNIQUE(file_a, file_b)
             );
 
+            CREATE TABLE IF NOT EXISTS symbol_co_changes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                symbol_a TEXT NOT NULL,
+                symbol_b TEXT NOT NULL,
+                file_a TEXT,
+                file_b TEXT,
+                shared_commits INTEGER NOT NULL,
+                total_commits_a INTEGER NOT NULL,
+                confidence REAL NOT NULL,
+                last_seen TEXT,
+                UNIQUE(symbol_a, symbol_b)
+            );
+
             CREATE TABLE IF NOT EXISTS hotspots (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 file_path TEXT UNIQUE,
@@ -462,6 +478,35 @@ class GitMiner:
                                  "--no-color", "--unified=3", h)
             commit_diff = diff_raw[:6000] if diff_raw else None
 
+            # Increment fragility score for modified symbols on bugfix commits
+            if re.search(r'\b(fix(es|ed|ing)?|bug(fix)?|regression)\b', body_lower):
+                if diff_raw:
+                    current_file = None
+                    modified_lines_by_file = defaultdict(list)
+                    for d_line in diff_raw.splitlines():
+                        if d_line.startswith("+++ b/"):
+                            current_file = d_line[6:].strip().replace("\\", "/")
+                        elif d_line.startswith("@@ ") and current_file:
+                            m = re.search(r"@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@", d_line)
+                            if m:
+                                l_start = int(m.group(1))
+                                l_cnt = int(m.group(2)) if m.group(2) else 1
+                                l_end = l_start + max(0, l_cnt - 1)
+                                modified_lines_by_file[current_file].append((l_start, l_end))
+                    
+                    for fpath, ranges in modified_lines_by_file.items():
+                        f_alt = fpath.replace("/", "\\")
+                        for l_start, l_end in ranges:
+                            try:
+                                conn.execute("""
+                                    UPDATE symbols SET fragility_score = fragility_score + 1
+                                    WHERE file_id IN (SELECT id FROM files WHERE path = ? OR path = ?)
+                                      AND NOT (line_end < ? OR line_start > ?)
+                                """, (fpath, f_alt, l_start, l_end))
+                            except Exception:
+                                pass
+            commit_diff = diff_raw[:6000] if diff_raw else None
+
             conn.execute(
                 """INSERT OR IGNORE INTO commit_reasoning
                    (commit_hash, author, date, body, keywords_found, files_touched, commit_diff)
@@ -505,8 +550,8 @@ class GitMiner:
     # ------------------------------------------------------------------
 
     def _mine_co_changes(self, conn: sqlite3.Connection):
-        """Find file pairs often committed together in the last 90 days."""
-        cutoff = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
+        """Find file pairs often committed together."""
+        cutoff = (datetime.now() - timedelta(days=2000)).strftime("%Y-%m-%d")
         raw = self._git(
             "log",
             f"--after={cutoff}",
@@ -514,6 +559,14 @@ class GitMiner:
             "--name-only",
             "--no-merges",
         )
+        if not raw or not raw.strip():
+            raw = self._git(
+                "log",
+                "-n", "5000",
+                "--format=%ai",
+                "--name-only",
+                "--no-merges",
+            )
         if not raw:
             return
 
@@ -544,6 +597,9 @@ class GitMiner:
 
         for date, files in blocks:
             files = [f for f in files if f.endswith((".ts", ".js", ".py", ".java"))]
+            if len(files) > 15:
+                # Skip bulk refactoring / reformatting commits to prevent spurius co-changes
+                continue
             for i in range(len(files)):
                 for j in range(i + 1, len(files)):
                     a, b = sorted([files[i], files[j]])
@@ -563,6 +619,111 @@ class GitMiner:
                 (a, b, data["count"], data["last_seen"]),
             )
 
+    def _mine_symbol_co_changes(self, conn: sqlite3.Connection):
+        """Perform fast association rule mining on symbol co-occurrences using git log -U0 hunk headers."""
+        cutoff = (datetime.now() - timedelta(days=2000)).strftime("%Y-%m-%d")
+        raw = self._git(
+            "log",
+            f"--after={cutoff}",
+            "-U0",
+            "--format=COMMIT|%ai",
+            "--no-merges",
+        )
+        if not raw or raw.count("COMMIT|") < 10:
+            raw = self._git(
+                "log",
+                "-n", "5000",
+                "-U0",
+                "--format=COMMIT|%ai",
+                "--no-merges",
+            )
+        if not raw:
+            return
+
+        symbols_by_file = defaultdict(list)
+        rows = conn.execute("""
+            SELECT f.path, s.name, s.line_start, s.line_end
+            FROM symbols s JOIN files f ON s.file_id = f.id
+            WHERE f.path LIKE '%.py'
+        """).fetchall()
+        for r in rows:
+            p_norm = r[0].replace("\\", "/")
+            symbols_by_file[p_norm].append((r[1], r[2], r[3]))
+
+        if not symbols_by_file:
+            return
+
+        commit_symbol_sets = []
+        current_symbols = set()
+        current_file = None
+        current_date = None
+
+        for line in raw.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith("COMMIT|"):
+                if current_symbols:
+                    commit_symbol_sets.append((current_date, list(current_symbols)))
+                    current_symbols = set()
+                current_date = line.split("|", 1)[1][:10] if "|" in line else ""
+                current_file = None
+                continue
+
+            if line.startswith("+++ b/"):
+                current_file = line[6:].strip().replace("\\", "/")
+                continue
+
+            if line.startswith("@@ ") and current_file and current_file in symbols_by_file:
+                m = re.search(r"@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@", line)
+                if m:
+                    start_line = int(m.group(1))
+                    line_count = int(m.group(2)) if m.group(2) else 1
+                    end_line = start_line + max(0, line_count - 1)
+                    for sym_name, l_start, l_end in symbols_by_file[current_file]:
+                        if not (end_line < l_start or start_line > l_end):
+                            current_symbols.add((sym_name, current_file))
+
+        if current_symbols:
+            commit_symbol_sets.append((current_date, list(current_symbols)))
+
+        symbol_counts = defaultdict(int)
+        pair_counts = defaultdict(lambda: {"count": 0, "last_seen": ""})
+
+        for date, sym_list in commit_symbol_sets:
+            for sym, fpath in sym_list:
+                symbol_counts[sym] += 1
+
+            for i in range(len(sym_list)):
+                for j in range(i + 1, len(sym_list)):
+                    s1, f1 = sym_list[i]
+                    s2, f2 = sym_list[j]
+                    if s1 == s2:
+                        continue
+                    for (src_sym, src_file, dst_sym, dst_file) in [(s1, f1, s2, f2), (s2, f2, s1, f1)]:
+                        key = (src_sym, dst_sym, src_file, dst_file)
+                        pair_counts[key]["count"] += 1
+                        if date and date > pair_counts[key]["last_seen"]:
+                            pair_counts[key]["last_seen"] = date
+
+        for (src_sym, dst_sym, src_file, dst_file), data in pair_counts.items():
+            shared = data["count"]
+            if shared < 3:
+                continue
+            total_a = symbol_counts.get(src_sym, shared)
+            confidence = shared / max(total_a, 1)
+            if confidence >= 0.40:
+                conn.execute(
+                    """INSERT INTO symbol_co_changes (symbol_a, symbol_b, file_a, file_b, shared_commits, total_commits_a, confidence, last_seen)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                       ON CONFLICT(symbol_a, symbol_b) DO UPDATE SET
+                         shared_commits = excluded.shared_commits,
+                         total_commits_a = excluded.total_commits_a,
+                         confidence = excluded.confidence,
+                         last_seen = excluded.last_seen""",
+                    (src_sym, dst_sym, src_file, dst_file, shared, total_a, round(confidence, 4), data["last_seen"]),
+                )
+
     # ------------------------------------------------------------------
     # Virtual edges
     # ------------------------------------------------------------------
@@ -572,7 +733,7 @@ class GitMiner:
         Materialise virtual_edges from co_changes.
 
         Gate: co_change_rate > 0.40 AND shared_commits >= 5.
-        Rate = shared_commits / min(commits_a, commits_b) in the 90-day window
+        Rate = shared_commits / min(commits_a, commits_b) in the 2000-day window
         — filters bootstrap commits and global refactors.
         Returns the number of rows inserted / updated.
         """
@@ -582,11 +743,15 @@ class GitMiner:
         if not candidates:
             return 0
 
-        # Per-file commit counts in the same 90-day window
-        cutoff = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
+        # Per-file commit counts in the same 2000-day window
+        cutoff = (datetime.now() - timedelta(days=2000)).strftime("%Y-%m-%d")
         raw = self._git(
             "log", f"--after={cutoff}", "--format=", "--name-only", "--no-merges"
         )
+        if not raw or not raw.strip():
+            raw = self._git(
+                "log", "-n", "5000", "--format=", "--name-only", "--no-merges"
+            )
         file_commit_counts: dict[str, int] = defaultdict(int)
         for line in raw.splitlines():
             line = line.strip()

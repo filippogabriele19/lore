@@ -86,6 +86,17 @@ CREATE TABLE IF NOT EXISTS meta (
     value TEXT
 );
 
+CREATE TABLE IF NOT EXISTS feedback (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    finding_type    TEXT NOT NULL,
+    file_path       TEXT NOT NULL,
+    symbol_name     TEXT DEFAULT '',
+    status          TEXT NOT NULL DEFAULT 'dismissed',
+    reason          TEXT DEFAULT '',
+    created_at      TEXT DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(finding_type, file_path, symbol_name)
+);
+
 CREATE TABLE IF NOT EXISTS virtual_edges (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     src_file        TEXT NOT NULL,
@@ -103,6 +114,19 @@ CREATE TABLE IF NOT EXISTS co_changes (
     count INTEGER DEFAULT 0,
     last_seen TEXT,
     UNIQUE(file_a, file_b)
+);
+
+CREATE TABLE IF NOT EXISTS symbol_co_changes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    symbol_a TEXT NOT NULL,
+    symbol_b TEXT NOT NULL,
+    file_a TEXT,
+    file_b TEXT,
+    shared_commits INTEGER NOT NULL,
+    total_commits_a INTEGER NOT NULL,
+    confidence REAL NOT NULL,
+    last_seen TEXT,
+    UNIQUE(symbol_a, symbol_b)
 );
 
 CREATE TABLE IF NOT EXISTS intent_nodes (
@@ -231,13 +255,43 @@ class SymbolDB:
         except sqlite3.OperationalError:
             pass
         try:
+            self.con.execute("""
+                CREATE TABLE IF NOT EXISTS symbol_co_changes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    symbol_a TEXT NOT NULL,
+                    symbol_b TEXT NOT NULL,
+                    file_a TEXT,
+                    file_b TEXT,
+                    shared_commits INTEGER NOT NULL,
+                    total_commits_a INTEGER NOT NULL,
+                    confidence REAL NOT NULL,
+                    last_seen TEXT,
+                    UNIQUE(symbol_a, symbol_b)
+                )
+            """)
+            self.con.commit()
+        except sqlite3.OperationalError:
+            pass
+        try:
             self.con.execute("ALTER TABLE symbols ADD COLUMN role TEXT DEFAULT 'source'")
+            self.con.commit()
+        except sqlite3.OperationalError:
+            pass
+        try:
+            self.con.execute("ALTER TABLE symbols ADD COLUMN fragility_score INTEGER DEFAULT 0")
+            self.con.commit()
+        except sqlite3.OperationalError:
+            pass
+        try:
+            self.con.execute("ALTER TABLE decision_links ADD COLUMN file_path TEXT DEFAULT ''")
+            self.con.execute("ALTER TABLE decision_links ADD COLUMN symbol_id INTEGER DEFAULT NULL")
             self.con.commit()
         except sqlite3.OperationalError:
             pass
         try:
             self.con.execute("CREATE INDEX IF NOT EXISTS idx_decision_links_symbol ON decision_links(symbol_id)")
             self.con.execute("CREATE INDEX IF NOT EXISTS idx_decision_links_name ON decision_links(symbol_name)")
+            self.con.execute("CREATE INDEX IF NOT EXISTS idx_decision_links_file_name ON decision_links(file_path, symbol_name)")
             self.con.commit()
         except sqlite3.OperationalError:
             pass
@@ -245,7 +299,8 @@ class SymbolDB:
             self.con.execute("""
                 CREATE TABLE IF NOT EXISTS decision_links (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    symbol_name TEXT, source_type TEXT, source_ref TEXT,
+                    symbol_name TEXT, file_path TEXT, symbol_id INTEGER,
+                    source_type TEXT, source_ref TEXT,
                     confidence REAL, description TEXT
                 )
             """)
@@ -635,4 +690,25 @@ class SymbolDB:
         except sqlite3.OperationalError as e:
             import logging
             logging.getLogger(__name__).warning(f"Failed to set meta key '{key}': {e}")
+
+    def dismiss_finding(self, finding_type: str, file_path: str, symbol_name: str = "", reason: str = "") -> None:
+        try:
+            self.con.execute("""
+                INSERT OR REPLACE INTO feedback (finding_type, file_path, symbol_name, status, reason)
+                VALUES (?, ?, ?, 'dismissed', ?)
+            """, (finding_type, file_path, symbol_name, reason))
+            self.con.commit()
+        except sqlite3.OperationalError as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Failed to dismiss finding: {e}")
+
+    def get_dismissed_findings(self) -> set[tuple[str, str, str]]:
+        try:
+            rows = self.con.execute(
+                "SELECT finding_type, file_path, symbol_name FROM feedback WHERE status='dismissed'"
+            ).fetchall()
+            return {(r[0], r[1], r[2]) for r in rows}
+        except sqlite3.OperationalError:
+            return set()
+
 

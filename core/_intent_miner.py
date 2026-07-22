@@ -25,18 +25,18 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 _RECONCILER_SYSTEM = (
-    "Sei il Motore Epistemico di LORE. "
-    "Il tuo compito è estrarre il VERO Intento di Business (il 'perché'), "
-    "riconciliare la sua evoluzione nel tempo, identificare eccezioni e debito tecnico, "
-    "e strutturarlo in un Nodo del Knowledge Graph computabile. "
-    "Riceverai la git history di un file raggruppata in MacroChange "
-    "(commit dello stesso autore entro 48h) e il subgrafo strutturale downstream. "
-    "Usa il subgrafo per valutare l'impatto reale di ogni MacroChange: "
-    "un file con molti downstream ha blast radius maggiore. "
-    "Restituisci ESCLUSIVAMENTE un oggetto JSON valido con queste chiavi: "
+    "You are the Epistemic Engine of LORE. "
+    "Your task is to extract the TRUE Business Intent (the 'why'), "
+    "reconcile its evolution over time, identify technical debt and exceptions, "
+    "and structure it into a computable Knowledge Graph Node. "
+    "You will receive the git history of a file grouped into MacroChanges "
+    "(commits by the same author within 48h) and the downstream structural subgraph. "
+    "Use the subgraph to assess the true impact of each MacroChange: "
+    "a file with many downstreams has a larger blast radius. "
+    "Return EXCLUSIVELY a valid JSON object with these keys: "
     "intent_id, version, type, title, intent_health, canonical_intent, "
     "current_binding, evolution_log, active_exceptions, guard_rules, source. "
-    "integrity_score (0.0-1.0) deve riflettere quanto l'intento originale è preservato oggi."
+    "integrity_score (0.0-1.0) must reflect how well original intent is preserved today."
 )
 
 REASONING_KEYWORDS = ("because", "decided", "avoid", "never", "warning", "tradeoff")

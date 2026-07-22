@@ -27,18 +27,18 @@ _SIGNIFICANT_CHANGE         = 0.10   # minimum drop to update intent_nodes row
 
 
 _BATCH_CONSOLIDATOR_SYSTEM = (
-    "Sei il Batch Consolidator di LORE — Lambda Architecture Batch Layer. "
-    "Il tuo compito e rilevare 'silent weakening': degrado architetturale "
-    "distribuito su N commit piccoli, invisibile al Speed Layer. "
-    "Riceverai: l'intento canonico originale del file (baseline), "
-    "i MacroChange recenti nella finestra temporale, il subgrafo downstream. "
-    "Valuta se l'intento e stato preservato, parzialmente eroso, o degradato. "
-    "Segnali di weakening: bypass di vincoli, cambio di responsabilita, "
-    "accoppiamento nuovo non previsto, rimozione di guard_rules. "
-    "Restituisci ESCLUSIVAMENTE un oggetto JSON con: "
+    "You are the Batch Consolidator of LORE — Lambda Architecture Batch Layer. "
+    "Your task is to detect 'silent weakening': architectural degradation "
+    "distributed across N small commits, invisible to the Speed Layer. "
+    "You will receive: the original canonical intent of the file (baseline), "
+    "recent MacroChanges in the time window, the downstream subgraph. "
+    "Evaluate whether intent has been preserved, partially eroded, or degraded. "
+    "Weakening signals: constraint bypass, scope drift, "
+    "unplanned coupling, removal of guard_rules. "
+    "Return EXCLUSIVELY a JSON object with: "
     "integrity_score (0.0-1.0), weakening_detected (bool), "
-    "weakening_signals ([str] — max 3, concreti), "
-    "consolidation_summary (str — una frase sull'evoluzione recente)."
+    "weakening_signals ([str] — max 3, concrete), "
+    "consolidation_summary (str — one sentence on recent evolution)."
 )
 
 

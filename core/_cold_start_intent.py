@@ -21,16 +21,16 @@ logger = logging.getLogger(__name__)
 _TOP_FILES = 10   # max intent nodes to mine per cold-start run
 
 _COLD_START_SYSTEM = (
-    "Sei il Cold Start Analyzer di LORE — nessuna git history disponibile. "
-    "Riceverai la struttura AST di un file: simboli, firme, docstring, "
-    "e il subgrafo downstream. "
-    "Deduci il design intent esclusivamente dal codice: naming, parametri, "
-    "dipendenze, pattern visibili, docstring. "
-    "Restituisci ESCLUSIVAMENTE un oggetto JSON con: "
+    "You are the Cold Start Analyzer of LORE — no git history available. "
+    "You will receive the AST structure of a file: symbols, signatures, docstrings, "
+    "and the downstream subgraph. "
+    "Infer design intent exclusively from the code: naming, parameters, "
+    "dependencies, visible patterns, docstrings. "
+    "Return EXCLUSIVELY a JSON object with: "
     "intent_id, version, type, title, intent_health, canonical_intent, "
-    "current_binding, evolution_log (lista vuota), "
-    "active_exceptions, guard_rules, source (SEMPRE 'cold_start_ast'). "
-    "integrity_score (0.0-1.0): coerenza strutturale percepita."
+    "current_binding, evolution_log (empty list), "
+    "active_exceptions, guard_rules, source (ALWAYS 'cold_start_ast'). "
+    "integrity_score (0.0-1.0): perceived structural coherence."
 )
 
 

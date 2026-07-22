@@ -3,16 +3,19 @@ requires = ["setuptools>=61.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "lore"
+name = "lore-kg"
 version = "6.0.0"
-description = "LORE: Local Institutional Memory for Enterprise Codebases"
+description = "LORE: Local Institutional Memory & 5-Layer Knowledge Graph for Enterprise Codebases"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
+keywords = ["knowledge-graph", "architecture", "ai-code-memory", "mcp", "static-analysis", "code-governance"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Software Development :: Quality Assurance",
 ]
 dependencies = [
     "anthropic>=0.7.0",

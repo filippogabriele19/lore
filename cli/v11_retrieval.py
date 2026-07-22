@@ -10,43 +10,43 @@ from cli.agent_retrieval import _cosine_sim, _get_embed_model, _get_data_contain
 
 logger = logging.getLogger(__name__)
 
-DECONSTRUCTOR_PROMPT = """Sei un Senior Software Architect. Il tuo compito è estrarre l'essenza di questo bug report per formulare delle parole chiave di ricerca ottimali.
+DECONSTRUCTOR_PROMPT = """You are a Senior Software Architect. Your task is to extract the core essence of this bug report to formulate optimal search queries.
 
-BUG REPORT ORIGINALE:
+ORIGINAL BUG REPORT:
 {problem}
 
-ISTRUZIONI:
-1. Riscrivi mentalmente questo bug report in 5 maniere diverse, focalizzandoti rispettivamente su: 
-   - Sintomi (cosa vede l'utente finale)
-   - Architettura (layer del framework coinvolti)
-   - Componenti (moduli specifici citati o implicati)
-   - Flusso dei Dati (da dove entra l'input a dove si verifica l'errore)
-   - Contesto Operativo / Edge Cases (condizioni specifiche in cui si verifica)
-2. Fai una media semantica dei concetti emersi e restituisci SOLO ed esclusivamente le 3-5 query di ricerca testuali (max 5 parole ciascuna) ottimali per trovare il VERO file sorgente (root cause) usando un motore di ricerca per codice (BM25 / FTS). 
-3. Ignora i file menzionati come "proposta di soluzione" dal bug-reporter se ti sembrano sbagliati architetturalmente.
-4. Cerca i nomi delle classi interne e delle funzioni (es. se si parla di migrazioni e di serializzazione degli enum, tira fuori la parola "serializer").
+INSTRUCTIONS:
+1. Rephrase this bug report from 5 different angles, focusing respectively on:
+   - Symptoms (what the end user observes)
+   - Architecture (framework layers involved)
+   - Components (specific modules mentioned or implied)
+   - Data Flow (where input enters to where the error occurs)
+   - Execution Context / Edge Cases (specific conditions causing the issue)
+2. Perform a semantic synthesis of these concepts and return ONLY 3-5 concise search queries (max 5 words each) optimal for finding the root-cause source file using a code search engine (BM25 / FTS).
+3. Ignore candidate files proposed by the bug reporter if they appear architecturally incorrect.
+4. Extract internal class and function names (e.g. if dealing with migrations and enum serialization, output terms like "serializer").
 
-Devi restituire ESATTAMENTE un array JSON di stringhe, ad esempio:
-["query uno", "query due", "query tre"]
-Non aggiungere testo fuori dal JSON.
+Return EXCLUSIVELY a JSON array of strings, for example:
+["query one", "query two", "query three"]
+Do not add any text outside the JSON.
 """
 
-VERIFICATION_PROMPT = """Sei un Senior Software Architect. Hai ricevuto un bug report e un insieme di snippet di codice estratti dal repository che POTREBBERO contenere la causa alla radice del problema.
+VERIFICATION_PROMPT = """You are a Senior Software Architect. You received a bug report and a set of code snippets extracted from the repository that MAY contain the root cause of the issue.
 
 BUG REPORT:
 {problem}
 
-CANDIDATI ESTRATTI:
+EXTRACTED CANDIDATES:
 {snippets}
 
-ISTRUZIONI:
-1. Leggi attentamente ogni candidato. Molti potrebbero essere falsi positivi (hallucinations o corrispondenze puramente lessicali).
-2. Scegli quali di questi candidati hanno la più alta probabilità di contenere il bug o di dover essere modificati per risolverlo.
-3. Restituisci l'identificativo esatto del simbolo (es. "file.py::NomeClasse") per i top candidati.
+INSTRUCTIONS:
+1. Review each candidate carefully. Some may be false positives or lexical matches.
+2. Select the candidates that have the highest probability of containing the bug or requiring modification to resolve it.
+3. Return the exact symbol identifier (e.g. "file.py::ClassName") for top candidates.
 
-Devi restituire ESATTAMENTE un array JSON di stringhe, in ordine di importanza decrescente (dal più rilevante al meno), ad esempio:
+Return EXCLUSIVELY a JSON array of strings in descending order of relevance, for example:
 ["django/db/models/query.py::QuerySet", "django/core/handlers/base.py::BaseHandler"]
-Non aggiungere testo fuori dal JSON.
+Do not add any text outside the JSON.
 """
 
 def _run_deconstructor(task: str, project_root: Path) -> list[str]:

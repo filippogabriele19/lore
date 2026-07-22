@@ -88,13 +88,13 @@ class DecisionLinker:
         finally:
             conn.close()
 
-    def get_context(self, symbol_names: list[str]) -> list[dict]:
+    def get_context(self, items: list[str | tuple[str, str]]) -> list[dict]:
         """
-        Returns the most relevant citations for the given symbols.
-        Each citation: symbol_name, source_type, source_ref, confidence, description.
+        Returns the most relevant citations for the given symbols or (file_path, symbol_name) pairs.
+        Each citation: symbol_name, file_path, source_type, source_ref, confidence, description.
         Sorted by confidence desc. Returns [] on any error.
         """
-        if not self.db_path.exists() or not symbol_names:
+        if not self.db_path.exists() or not items:
             return []
 
         conn = sqlite3.connect(self.db_path)
@@ -106,18 +106,49 @@ class DecisionLinker:
             if "decision_links" not in tables:
                 return []
 
-            placeholders = ",".join("?" * len(symbol_names))
-            rows = conn.execute(
-                f"""SELECT symbol_name, source_type, source_ref, confidence, description
-                    FROM decision_links
-                    WHERE symbol_name IN ({placeholders})
-                    ORDER BY confidence DESC LIMIT 20""",
-                symbol_names,
-            ).fetchall()
+            dl_cols = {r[1] for r in conn.execute("PRAGMA table_info(decision_links)").fetchall()}
+            has_file_col = "file_path" in dl_cols
+
+            scoped_pairs = []
+            unscoped_names = []
+            for item in items:
+                if isinstance(item, tuple) and len(item) == 2:
+                    scoped_pairs.append((item[0].replace("\\", "/"), item[1]))
+                elif isinstance(item, str):
+                    unscoped_names.append(item)
+
+            rows = []
+            if scoped_pairs and has_file_col:
+                for fpath, sname in scoped_pairs:
+                    f_alt = fpath.replace("/", "\\")
+                    r_set = conn.execute("""
+                        SELECT symbol_name, file_path, source_type, source_ref, confidence, description
+                        FROM decision_links
+                        WHERE (file_path = ? OR file_path = ? OR file_path = '') AND symbol_name = ?
+                        ORDER BY confidence DESC LIMIT 10
+                    """, (fpath, f_alt, sname)).fetchall()
+                    rows.extend(r_set)
+
+            if unscoped_names:
+                placeholders = ",".join("?" * len(unscoped_names))
+                r_set = conn.execute(
+                    f"""SELECT symbol_name, file_path, source_type, source_ref, confidence, description
+                        FROM decision_links
+                        WHERE symbol_name IN ({placeholders})
+                        ORDER BY confidence DESC LIMIT 20""",
+                    unscoped_names,
+                ).fetchall()
+                rows.extend(r_set)
 
             cr_table_exists = "commit_reasoning" in tables
             results = []
+            seen = set()
             for row in rows:
+                key = (row["symbol_name"], row["source_type"], row["source_ref"])
+                if key in seen:
+                    continue
+                seen.add(key)
+
                 if row["source_type"] != "commit" or not cr_table_exists:
                     results.append(dict(row))
                     continue

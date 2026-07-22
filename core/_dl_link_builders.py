@@ -19,6 +19,13 @@ _IGNORE_DIRS = {
 _ADR_KEYWORDS = ("adr", "decision", "spec", "design", "arch", "rfc", "proposal")
 
 
+_BOILERPLATE_SYMBOLS = {
+    "__init__", "__str__", "__repr__", "__eq__", "__hash__", "__iter__", "__len__",
+    "__getitem__", "__setitem__", "__delitem__", "setUp", "tearDown", "setUpTestData",
+    "handle", "render", "check", "add_arguments", "deconstruct", "get_queryset", "clean"
+}
+
+
 def links_from_commit_reasoning(conn: sqlite3.Connection) -> int:
     """M2 — Commit reasoning (confidence 0.70-0.85)."""
     tables = {r[0] for r in conn.execute(
@@ -40,13 +47,13 @@ def links_from_commit_reasoning(conn: sqlite3.Connection) -> int:
         """).fetchall()
         for r in sym_rows:
             path_key = r["path"].replace("\\", "/").lower()
-            file_symbol_map.setdefault(path_key, []).append((r["name"], r["id"]))
+            file_symbol_map.setdefault(path_key, []).append((r["name"], r["id"], r["path"].replace("\\", "/")))
     except Exception:
         pass
 
     _INSERT = """INSERT OR IGNORE INTO decision_links
-                 (symbol_name, symbol_id, source_type, source_ref, confidence, description)
-                 VALUES (?, ?, 'commit', ?, ?, ?)"""
+                 (symbol_name, file_path, symbol_id, source_type, source_ref, confidence, description)
+                 VALUES (?, ?, ?, 'commit', ?, ?, ?)"""
     _CAP     = 5_000
     _BATCH   = 500
 
@@ -86,10 +93,12 @@ def links_from_commit_reasoning(conn: sqlite3.Connection) -> int:
             
             path_key = file_path.replace("\\", "/").lower()
             symbol_rows = file_symbol_map.get(path_key, [])
-            targets = symbol_rows if symbol_rows else [(file_path, None)]
+            targets = symbol_rows if symbol_rows else [(file_path, None, file_path)]
 
-            for sym_name, sym_id in targets:
-                batch.append((sym_name, sym_id, hash_[:8], confidence, first_line))
+            for sym_name, sym_id, f_norm in targets:
+                if sym_name in _BOILERPLATE_SYMBOLS and sym_name.lower() not in body_lower:
+                    continue
+                batch.append((sym_name, f_norm, sym_id, hash_[:8], confidence, first_line))
                 if len(batch) >= _BATCH:
                     inserted += _flush()
                 if inserted >= _CAP:
@@ -115,29 +124,30 @@ def links_from_hotspots(conn: sqlite3.Connection) -> int:
         return 0
 
     rows = conn.execute(
-        "SELECT file_path, change_freq, risk_score FROM hotspots WHERE risk_score > 0.5"
+        "SELECT file_path, change_freq, risk_score FROM hotspots WHERE risk_score > 0.5 AND change_freq >= 10"
     ).fetchall()
 
     count = 0
     for row in rows:
         file_path, change_freq, risk_score = row
+        f_norm = file_path.replace("\\", "/")
         symbol_rows = conn.execute(
-            """SELECT s.name FROM symbols s
+            """SELECT s.name, s.id FROM symbols s
                JOIN files f ON s.file_id = f.id
-               WHERE f.path LIKE ? LIMIT 20""",
-            (f"%{file_path.split('/')[-1]}",),
+               WHERE f.path = ? OR f.path LIKE ? LIMIT 20""",
+            (file_path, f"%{f_norm.split('/')[-1]}"),
         ).fetchall()
-        targets = [r[0] for r in symbol_rows] if symbol_rows else [file_path]
+        targets = [(r[0], r[1]) for r in symbol_rows] if symbol_rows else [(f_norm, None)]
         description = (
             f"HOTSPOT: {change_freq} commits in last 90 days — "
             f"review carefully before modifying"
         )
-        for sym_name in targets:
+        for sym_name, sym_id in targets:
             conn.execute(
                 """INSERT OR IGNORE INTO decision_links
-                   (symbol_name, source_type, source_ref, confidence, description)
-                   VALUES (?, 'hotspot', ?, ?, ?)""",
-                (sym_name, file_path, float(risk_score), description),
+                   (symbol_name, file_path, symbol_id, source_type, source_ref, confidence, description)
+                   VALUES (?, ?, ?, 'hotspot', ?, ?, ?)""",
+                (sym_name, f_norm, sym_id, file_path, float(risk_score), description),
             )
             count += 1
 
