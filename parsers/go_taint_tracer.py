@@ -161,7 +161,8 @@ class GoASTTaintTracer(BaseTaintTracer):
             
             # Check args
             args = node.child_by_field_name("arguments") or node.children[-1]
-            for idx, child in enumerate(args.children):
+            arg_children = [c for c in args.children if c.type not in (",", "(", ")", ";")]
+            for idx, child in enumerate(arg_children):
                 is_arg_tainted, desc = _check_expr_taint(child, self.tainted_vars, self.src_bytes)
                 if is_arg_tainted:
                     t_var = ""

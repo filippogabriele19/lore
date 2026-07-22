@@ -38,6 +38,7 @@ from cli.webhook_server import _main_webhook_server
 from cli.ingest_github import _main_ingest_github
 from cli.ingest_slack import _main_ingest_slack
 from cli.feedback import _main_dismiss
+from cli.reindex import _main_reindex
 
 def main() -> None:
     if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help", "help"):
@@ -68,6 +69,7 @@ def main() -> None:
         table.add_row("ingest-github", "Ingest GitHub historical pull requests and issues to extract design rules")
         table.add_row("ingest-slack", "Ingest Slack historical channel messages to extract design rules")
         table.add_row("dismiss", "Dismiss a false positive LORE warning for a file or symbol")
+        table.add_row("reindex", "Re-compute symbol fragility scores & co-changes across existing DB")
         table.add_row("benchmark", "Run Quantitative SWE-bench validation harness (Baseline vs LORE)")
         
         console.print(table)
@@ -118,6 +120,8 @@ def main() -> None:
         _main_ingest_slack(argv)
     elif cmd == "dismiss":
         _main_dismiss(argv)
+    elif cmd == "reindex":
+        _main_reindex(argv)
     elif cmd == "benchmark":
         _main_benchmark(argv)
     else:

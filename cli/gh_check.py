@@ -162,10 +162,12 @@ def _main_gh_check(argv: list[str] | None = None) -> None:
     test_files = [f for f in changed_files if "test" in f.lower()]
     has_test_coupling_warning = len(core_source_files) > 0 and len(test_files) == 0
 
-    # 2d. Code Invariant Mining & Sibling Conventions
+    # 2d. Code Invariant Mining, Sibling Conventions & Boundary Condition Miner
     from core.invariant_miner import mine_sibling_conventions, check_guard_stability
+    from core.boundary_miner import check_boundary_mutations
     sibling_warnings = []
     invariant_alerts = []
+    boundary_alerts = []
 
     # Fetch patch diffs for invariant checking
     patch_diff_map = {}
@@ -209,6 +211,9 @@ def _main_gh_check(argv: list[str] | None = None) -> None:
             if file_diff:
                 inv_warns = check_guard_stability(full_path, file_diff)
                 invariant_alerts.extend(inv_warns)
+
+                b_warns = check_boundary_mutations(full_path, file_diff)
+                boundary_alerts.extend(b_warns)
 
     # 2e. Fragile Symbols Query (threshold >= 2)
     fragile_symbols = []
@@ -300,6 +305,13 @@ def _main_gh_check(argv: list[str] | None = None) -> None:
             print("Historical entry guards or assertions altered or removed in this patch:")
             for ia in invariant_alerts:
                 print(f"* {ia['msg']}")
+            print()
+
+        if boundary_alerts:
+            print("### ⚖️ Boundary Condition Shift Alerts")
+            print("Comparison operator mutations or boundary condition shifts detected:")
+            for ba in boundary_alerts:
+                print(f"* {ba['msg']}")
             print()
 
         if hotspots:
@@ -500,9 +512,14 @@ def _get_function_param_name(file_path: Path, func_name: str, arg_index: int | N
                         if param_list:
                             for param_decl in param_list.children:
                                 if param_decl.type == "parameter_declaration":
-                                    for child in param_decl.children:
-                                        if child.type == "identifier":
-                                            params.append(src_bytes[child.start_byte:child.end_byte].decode("utf-8"))
+                                    name_node = param_decl.child_by_field_name("name")
+                                    if name_node and name_node.type == "identifier":
+                                        params.append(src_bytes[name_node.start_byte:name_node.end_byte].decode("utf-8"))
+                                    else:
+                                        for child in param_decl.children:
+                                            if child.type == "identifier":
+                                                params.append(src_bytes[child.start_byte:child.end_byte].decode("utf-8"))
+                                                break
                         return True
                 for child in node.children:
                     if walk(child):

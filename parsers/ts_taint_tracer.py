@@ -16,6 +16,9 @@ def _check_expr_taint(node, tainted_vars: Set[str], src_bytes: bytes) -> Tuple[b
         text = _get_node_text(node, src_bytes)
         if text in tainted_vars:
             return True, f"propagated from {text}"
+        text_lower = text.lower()
+        if any(pat in text_lower for pat in ("query", "body", "cookie", "request", "header", "params")):
+            return True, f"source: {text}"
         # Check base
         object_n = node.child_by_field_name("object") or node.children[0]
         is_obj_tainted, desc = _check_expr_taint(object_n, tainted_vars, src_bytes)
@@ -166,9 +169,8 @@ class TSASTTaintTracer(BaseTaintTracer):
             
             # Check args
             args = node.child_by_field_name("arguments") or node.children[-1]
-            for idx, child in enumerate(args.children):
-                if child.type in (",", "(", ")"):
-                    continue
+            arg_children = [c for c in args.children if c.type not in (",", "(", ")", ";")]
+            for idx, child in enumerate(arg_children):
                 is_arg_tainted, desc = _check_expr_taint(child, self.tainted_vars, self.src_bytes)
                 if is_arg_tainted:
                     t_var = ""
