@@ -43,28 +43,28 @@ It serves as a **Semantic Firewall**, exposing this graph via **Model Context Pr
 ```mermaid
 graph TD
     subgraph Evidence Sources
-        A1[Codebase & Git History]
+        A1["Codebase & Git History"]
         A2["GitHub PRs & Issues (Webhooks & CLI)"]
         A3["Slack Channel Chat logs (Webhooks & CLI)"]
     end
     
-    A1 & A2 & A3 -->|Ingestion & Mining| B[LORE Engine]
-    B -->|Builds| C[5-Layer Knowledge Graph]
+    A1 & A2 & A3 -->|Ingestion & Mining| B["LORE Engine"]
+    B -->|Builds| C["5-Layer Knowledge Graph"]
     
     subgraph Knowledge Graph Layers
-        C1[L1: Structural AST Symbols (Py, Go, TS)]
-        C2[L2: Semantic Vector Store sqlite-vec]
-        C3[L3: Historical Co-changes & Fragility Scores]
-        C4[L4: Decisional Links to ADRs & PRs]
-        C5[L5: Institutional Policy & Boundary Rules]
+        C1["L1: Structural AST Symbols (Py, Go, TS)"]
+        C2["L2: Semantic Vector Store sqlite-vec"]
+        C3["L3: Historical Co-changes & Fragility Scores"]
+        C4["L4: Decisional Links to ADRs & PRs"]
+        C5["L5: Institutional Policy & Boundary Rules"]
     end
     
     C --> C1 & C2 & C3 & C4 & C5
-    C -->|Exposes Context| D[Model Context Protocol Server]
-    C -->|Validates Diff| E[LORE Guardian & SARIF Output]
+    C -->|Exposes Context| D["Model Context Protocol Server"]
+    C -->|Validates Diff| E["LORE Guardian & SARIF Output"]
     
-    D -->|Guide Agent| F[Cursor / Claude Desktop / Claude Code]
-    E -->|Block Breaking PR| G[Pull Request Gatekeeper]
+    D -->|Guide Agent| F["Cursor / Claude Desktop / Claude Code"]
+    E -->|Block Breaking PR| G["Pull Request Gatekeeper"]
 ```
 
 ---
