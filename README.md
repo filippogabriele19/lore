@@ -21,7 +21,9 @@
 | **Overall False Positive Reduction** | **88.7% Noise Reduction** | Precision-calibrated thresholds eliminate alert fatigue in production pipelines. |
 | **Symbol Co-Change Associations** | **816 Active Rules Mined** | Deep symbol-level association rules prevent missing coupled updates. |
 
-### ⚡ Token Efficiency & Context Compression (14 Real Refactoring Tasks)
+### ⚡ Token Efficiency & Context Compression
+
+Evaluated across **14 realistic refactoring tasks** on **Django** (7 tasks) and **LangChain** (7 tasks) targeting complex, large modules (2,000–6,500 lines). Compares **Baseline** (full-file view / broad RAG context) vs. **LORE MCP** (Knowledge Graph AST symbol extraction, caller graphs, and co-change context) with exact BPE token accounting:
 
 | Refactoring Context Metric | Baseline (Unguided RAG / Full File View) | LORE MCP (Knowledge Graph) | Impact / Token Savings |
 | :--- | :---: | :---: | :--- |
