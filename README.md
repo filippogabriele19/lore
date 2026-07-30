@@ -21,17 +21,17 @@
 | **Overall False Positive Reduction** | **88.7% Noise Reduction** | Precision-calibrated thresholds eliminate alert fatigue in production pipelines. |
 | **Symbol Co-Change Associations** | **816 Active Rules Mined** | Deep symbol-level association rules prevent missing coupled updates. |
 
-### ⚡ Token Efficiency & LORE 2.0 Context Compression
+### ⚡ Token Efficiency & Context Compression
 
-Evaluated across **14 realistic refactoring tasks** on **Django** (7 tasks) and **LangChain** (7 tasks) targeting complex, large modules (2,000–6,500 lines). Compares **Baseline** (full-file view / broad RAG context) vs. **LORE 2.0 MCP** (AST Skeletonization, BPE-Friendly Graph DSL, Concentric Level of Detail (LoD) Topology, and Prompt Caching Headers) with exact BPE token accounting:
+Evaluated across **14 realistic refactoring tasks** on **Django** (7 tasks) and **LangChain** (7 tasks) targeting complex, large modules (2,000–6,500 lines). Compares **Baseline** (full-file view / broad RAG context) vs. **LORE MCP** (AST Skeletonization, BPE-Friendly Graph DSL, Concentric Level of Detail (LoD) Topology, and Prompt Caching Headers) with exact BPE token accounting:
 
-| Refactoring Context Metric | Baseline (Unguided RAG / Full File View) | LORE 2.0 MCP (Context Compression Engine) | Impact / Token Savings |
+| Refactoring Context Metric | Baseline (Unguided RAG / Full File View) | LORE MCP (Context Compression Engine) | Impact / Token Savings |
 | :--- | :---: | :---: | :--- |
 | **Total Prompt Input Tokens** | 172,380 tokens | **61,620 tokens** | 🟢 **64.25% Input Token Reduction** |
 | **Total Output Generation Tokens** | 5,352 tokens | **3,849 tokens** | 🟢 **28.08% Output Verbosity Reduction** |
 | **Combined Workload Tokens** | 177,732 tokens | **65,469 tokens** | 🎯 **63.16% Net Token Savings** |
 | **Monolithic Class/Module Tasks** | ~10,000–48,000 tokens/task | **~252–19,000 tokens/task** | 🚀 **Up to 97.7% Prompt Size Reduction** |
-| **Financial API Cost (Prompt Caching)** | Standard Uncached ($3.00 / 1M) | LORE 2.0 Cache Hits ($0.30 / 1M for 78% tokens) | 💰 **85.3% API Financial Cost Reduction** |
+| **Financial API Cost (Prompt Caching)** | Standard Uncached ($3.00 / 1M) | LORE Cache Hits ($0.30 / 1M for 78% tokens) | 💰 **85.3% API Financial Cost Reduction** |
 
 ---
 

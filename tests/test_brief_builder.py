@@ -211,7 +211,7 @@ def test_build_brief_full(mock_get_embed, mock_find_tests, mock_git, populated_d
     
     builder = BriefBuilder(populated_db, tmp_path)
     brief = builder.build_brief("auth.py", "Fix auth rate limit", focus_lines=[range(10, 12)])
-    assert "=== LORE 2.0 KNOWLEDGE GRAPH BRIEF for auth.py ===" in brief
+    assert "=== LORE KNOWLEDGE GRAPH BRIEF for auth.py ===" in brief
     assert "INTENT (why this code exists):" in brief
     assert "Manage user authentication sessions" in brief
     assert "DECISIONS & CONSTRAINTS:" in brief

@@ -86,7 +86,7 @@ class BriefBuilder:
 
         brief_lines = [
             "[LORE_STATIC_GRAPH_CACHE_BLOCK]",
-            f"=== LORE 2.0 KNOWLEDGE GRAPH BRIEF for {file_path_norm} ===",
+            f"=== LORE KNOWLEDGE GRAPH BRIEF for {file_path_norm} ===",
             "",
             intent,
             "",

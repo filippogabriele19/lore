@@ -79,7 +79,7 @@ class LoDGraphBuilder:
         # 3. Assemble Static Cache Block
         static_lines = [
             "[LORE_STATIC_GRAPH_CACHE_BLOCK]",
-            "=== LORE 2.0 KNOWLEDGE GRAPH TOPOLOGY & CONSTRAINTS ===",
+            "=== LORE KNOWLEDGE GRAPH TOPOLOGY & CONSTRAINTS ===",
             dsl_metadata
         ]
         if stubs_text:
