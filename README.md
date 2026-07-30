@@ -12,7 +12,7 @@
 
 ## 📊 Empirical Performance (Django & LangChain Benchmark)
 
-LORE is backed by an empirical benchmark suite evaluated over **199 real commits** across the Django and LangChain repositories:
+### 🛡️ Architectural Precision & Noise Reduction
 
 | Metric | Performance | Impact |
 | :--- | :---: | :--- |
@@ -20,6 +20,15 @@ LORE is backed by an empirical benchmark suite evaluated over **199 real commits
 | **Clean PR False Positive Rate** | **1.0%** [95% CI: 0.2%–5.4%] | Near-zero alert fatigue on benign refactoring and documentation PRs. |
 | **Overall False Positive Reduction** | **88.7% Noise Reduction** | Precision-calibrated thresholds eliminate alert fatigue in production pipelines. |
 | **Symbol Co-Change Associations** | **816 Active Rules Mined** | Deep symbol-level association rules prevent missing coupled updates. |
+
+### ⚡ Token Efficiency & Context Compression (14 Real Refactoring Tasks)
+
+| Refactoring Context Metric | Baseline (Unguided RAG / Full File View) | LORE MCP (Knowledge Graph) | Impact / Token Savings |
+| :--- | :---: | :---: | :--- |
+| **Total Prompt Input Tokens** | 172,380 tokens | **87,704 tokens** | 🟢 **49.1% Input Token Reduction** |
+| **Total Output Generation Tokens** | 5,352 tokens | **4,366 tokens** | 🟢 **18.4% Output Verbosity Reduction** |
+| **Combined Workload Tokens** | 177,732 tokens | **92,070 tokens** | 🎯 **48.2% Net Token Savings** |
+| **Large Monolithic Files (>2k lines)** | ~21,000–48,000 tokens/task | **~800–19,000 tokens/task** | 🚀 **Up to 90.8% Prompt Size Reduction** |
 
 ---
 
