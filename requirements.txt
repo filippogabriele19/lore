@@ -10,8 +10,10 @@ libcst>=1.0.0
 tree-sitter-languages>=1.8.0
 networkx>=3.0.0
 
-# AI/LLM Integration
+# AI/LLM Integration & MCP Server
 anthropic>=0.7.0
+mcp>=1.0.0
+
 
 # Semantic Search (optional — `lore index` command)
 # sentence-transformers downloads all-MiniLM-L6-v2 (~80MB) on first use
