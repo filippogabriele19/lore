@@ -12,7 +12,8 @@ networkx>=3.0.0
 
 # AI/LLM Integration & MCP Server
 anthropic>=0.7.0
-mcp>=1.0.0
+mcp>=1.0.0,<2.0.0
+
 
 
 # Semantic Search (optional — `lore index` command)
