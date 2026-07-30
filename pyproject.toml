@@ -46,3 +46,8 @@ packages = ["core", "cli", "parsers"]
 
 [tool.setuptools.package-data]
 "cli" = ["templates/*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = ["_scan_targets", "benchmark_results", "examples", "scratch", "venv", ".git", ".lore_poc"]
+
