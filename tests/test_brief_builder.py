@@ -211,8 +211,7 @@ def test_build_brief_full(mock_get_embed, mock_find_tests, mock_git, populated_d
     
     builder = BriefBuilder(populated_db, tmp_path)
     brief = builder.build_brief("auth.py", "Fix auth rate limit", focus_lines=[range(10, 12)])
-    
-    assert "=== ANALYSIS BRIEF for auth.py ===" in brief
+    assert "=== LORE 2.0 KNOWLEDGE GRAPH BRIEF for auth.py ===" in brief
     assert "INTENT (why this code exists):" in brief
     assert "Manage user authentication sessions" in brief
     assert "DECISIONS & CONSTRAINTS:" in brief
@@ -223,7 +222,7 @@ def test_build_brief_full(mock_get_embed, mock_find_tests, mock_git, populated_d
     assert "RELEVANT BLAME CONTEXT:" in brief
     assert "RECENT COMMITS ON THIS FILE:" in brief
     assert "SIMILAR PREVIOUS FIX" in brief
-    assert "=== END BRIEF ===" in brief
+    assert "[LORE_DYNAMIC_DELTA_BLOCK]" in brief
 
 def test_build_signpost_brief(populated_db, tmp_path):
     builder = BriefBuilder(populated_db, tmp_path)

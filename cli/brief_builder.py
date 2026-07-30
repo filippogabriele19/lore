@@ -85,7 +85,8 @@ class BriefBuilder:
             return ""
 
         brief_lines = [
-            f"=== ANALYSIS BRIEF for {file_path_norm} ===",
+            "[LORE_STATIC_GRAPH_CACHE_BLOCK]",
+            f"=== LORE 2.0 KNOWLEDGE GRAPH BRIEF for {file_path_norm} ===",
             "",
             intent,
             "",
@@ -106,13 +107,14 @@ class BriefBuilder:
         if similar_fixes:
             brief_lines.extend([similar_fixes, ""])
 
-        brief_lines.append(f"=== END BRIEF ===")
+        brief_lines.extend(["[LORE_DYNAMIC_DELTA_BLOCK]", f"=== TARGET CONTEXT FOR {file_path_norm} ==="])
         
         brief_text = "\n".join(brief_lines)
         
         # Token budget limit (~1500 tokens -> ~6000 chars)
         if len(brief_text) > 6000:
-            brief_text = brief_text[:5900] + "\n... [Brief truncated due to token budget] ...\n=== END BRIEF ==="
+            brief_text = brief_text[:5900] + "\n... [Brief truncated due to token budget] ...\n[LORE_DYNAMIC_DELTA_BLOCK]"
+
             
         return brief_text
 

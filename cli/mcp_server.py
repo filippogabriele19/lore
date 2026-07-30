@@ -91,29 +91,30 @@ def lore_get_symbol_context(project_path: str, symbol_name: str) -> str:
             
             if not block:
                 return f"Symbol '{symbol_name}' not found in Knowledge Graph."
-                
+            
             adrs = db.con.execute(
                 "SELECT source_ref, confidence, description FROM decision_links WHERE symbol_name=?",
                 (symbol_name,)
             ).fetchall()
+
+            adr_dicts = [{"source_ref": a[0], "confidence": a[1], "description": a[2]} for a in adrs] if adrs else []
+            
+            from core.lod_graph_builder import LoDGraphBuilder
+            builder = LoDGraphBuilder(str(project_root))
+            
+            return builder.build_lod_context(
+                focal_symbol=block['symbol'],
+                focal_code=block['body'],
+                file_path=block['file'],
+                language="python" if block['file'].endswith(".py") else "generic",
+                dependencies=block.get("depends_on"),
+                callers=block.get("called_by"),
+                co_changes=None,
+                adrs=adr_dicts,
+                fragility_score=0.5
+            )
         finally:
             db.close()
-        
-        out = [f"Symbol: {block['symbol']} [{block['kind']}]", f"Defined in: {block['file']} (lines {block['lines']})", "\n--- Code Body ---", block["body"]]
-        if block["depends_on"]:
-            out.append("\n--- Direct Dependencies ---")
-            for d in block["depends_on"]:
-                loc = f" @ {d['location']}" if d['location'] else ""
-                out.append(f"  - [{d['type']}] {d['name']} ({d['kind']}){loc}")
-        if block["called_by"]:
-            out.append("\n--- Callers ---")
-            for c in block["called_by"]:
-                out.append(f"  - {c['caller']} in {c['file']}:{c['line']}")
-        if adrs:
-            out.append("\n--- Linked Architectural Decisions (ADR) ---")
-            for a in adrs:
-                out.append(f"  - [{a[0]}] Confidence: {a[1]:.2f} - {a[2]}")
-        return "\n".join(out)
     except Exception as e:
         return f"Error retrieving symbol context: {e}"
 
