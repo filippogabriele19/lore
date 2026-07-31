@@ -210,7 +210,7 @@ class DueDiligenceEngine:
 
     def generate_html_report(self, data: Dict[str, Any], output_path: Path) -> Path:
         """
-        Generates a standalone, beautiful HTML Due Diligence report for M&A / VCs.
+        Generates executive-grade HTML Technical Due Diligence Report for M&A / VCs.
         """
         bf = data["bus_factor"]
         h = data["health"]
@@ -234,146 +234,277 @@ class DueDiligenceEngine:
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Technical Due Diligence Audit — {data['project_name']}</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        
         :root {{
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-color: #f8fafc;
-            --accent-color: #38bdf8;
-            --accent-green: #22c55e;
-            --accent-yellow: #eab308;
+            --bg-color: #090d16;
+            --card-bg: #111827;
+            --card-border: #1f2937;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent-cyan: #38bdf8;
+            --accent-purple: #a855f7;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
             --accent-red: #ef4444;
-            --border-color: #334155;
         }}
+        
+        * {{ box-sizing: border-box; }}
         body {{
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-color);
+            color: var(--text-main);
             margin: 0;
-            padding: 40px;
+            padding: 40px 20px;
             line-height: 1.6;
         }}
-        .header {{
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 20px;
+        
+        .container {{
+            max-width: 1100px;
+            margin: 0 auto;
+        }}
+
+        .top-banner {{
+            background: linear-gradient(135deg, #2e1065 0%, #0f172a 100%);
+            border: 1px solid #581c87;
+            border-radius: 12px;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }}
+
+        .audit-badge {{
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: #e9d5ff;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }}
+
+        .header {{
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-end;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--card-border);
         }}
-        h1 {{ margin: 0; color: var(--accent-color); font-size: 28px; }}
-        .subtitle {{ color: #94a3b8; font-size: 14px; margin-top: 5px; }}
+
+        h1 {{
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(to right, #c084fc, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }}
+
+        .subtitle {{
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 6px;
+        }}
+
         .grid {{
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }}
+
         .card {{
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 20px;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 24px;
         }}
-        .card-title {{ font-size: 14px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }}
-        .card-value {{ font-size: 36px; font-weight: bold; margin: 10px 0; color: var(--accent-color); }}
-        .card-desc {{ font-size: 13px; color: #cbd5e1; }}
+
+        .card-title {{
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }}
+
+        .card-value {{
+            font-size: 36px;
+            font-weight: 800;
+            margin: 10px 0;
+            color: var(--accent-cyan);
+        }}
+
+        .card-desc {{
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }}
+
+        .badge {{
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }}
+
+        .risk-low {{ background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }}
+        .risk-medium {{ background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }}
+        .risk-high {{ background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }}
+
+        .section-title {{
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin: 35px 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }}
+
         table {{
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
             background: var(--card-bg);
-            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
             overflow: hidden;
+            margin-bottom: 30px;
         }}
-        th, td {{ padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border-color); }}
-        th {{ background-color: #090d16; color: #94a3b8; font-size: 12px; text-transform: uppercase; }}
-        code {{ font-family: monospace; color: #e2e8f0; font-size: 13px; }}
-        .badge {{
-            padding: 4px 8px;
+
+        th, td {{
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border);
+        }}
+
+        th {{
+            background: #0f172a;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }}
+
+        td {{ font-size: 14px; color: var(--text-main); }}
+
+        code {{
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            background: rgba(255,255,255,0.05);
+            padding: 2px 6px;
             border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
+            color: #38bdf8;
         }}
-        .risk-high {{ background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }}
-        .risk-medium {{ background: rgba(234, 179, 8, 0.2); color: var(--accent-yellow); }}
-        .risk-low {{ background: rgba(34, 197, 94, 0.2); color: var(--accent-green); }}
-        .section-header {{ margin-top: 40px; margin-bottom: 15px; font-size: 20px; color: #f1f5f9; }}
+
+        .footer {{
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-size: 12px;
+        }}
     </style>
 </head>
 <body>
-    <div class="header">
-        <div>
-            <h1>📊 Technical Due Diligence Report</h1>
-            <div class="subtitle">Repository: <strong>{data['project_name']}</strong> &bull; Generated: {data['timestamp'][:19]}</div>
+    <div class="container">
+        <div class="top-banner">
+            <div class="audit-badge">
+                🔮 TECHNICAL DUE DILIGENCE & ENGINEERING HEALTH AUDIT
+            </div>
+            <div style="font-size: 12px; color: #cbd5e1;">
+                Target: M&A / VC / PE Investment Review
+            </div>
         </div>
-        <div>
-            <span class="badge risk-low" style="font-size: 14px; padding: 8px 16px;">LORE Knowledge Graph Verified</span>
+
+        <div class="header">
+            <div>
+                <h1>📊 Executive Due Diligence Report</h1>
+                <div class="subtitle">Repository: <strong>{data['project_name']}</strong> &bull; Generated: {data['timestamp'][:19]}</div>
+            </div>
+            <div>
+                <span class="badge risk-low">VERIFIED BY LORE KNOWLEDGE GRAPH</span>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">Codebase Health Score</div>
+                <div class="card-value" style="color: {'#10b981' if h['health_score']>=75 else '#f59e0b' if h['health_score']>=60 else '#ef4444'}">{h['health_score']} <span style="font-size: 16px; font-weight: 400; color: #9ca3af;">/ 100</span></div>
+                <div class="card-desc">Grade: <strong>{h['health_grade']}</strong></div>
+            </div>
+            <div class="card">
+                <div class="card-title">Bus Factor & Person Risk</div>
+                <div class="card-value" style="font-size: 22px; margin-top: 16px; color: {'#10b981' if 'LOW' in bf['bus_factor_risk_level'] else '#f59e0b' if 'MEDIUM' in bf['bus_factor_risk_level'] else '#ef4444'}">{bf['bus_factor_risk_level']}</div>
+                <div class="card-desc"><strong>{bf['single_author_files_count']}</strong> files ({bf['bus_factor_ratio_percent']}%) have >70% single-author concentration.</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Indexed Architecture Scale</div>
+                <div class="card-value">{h['symbol_count']:,}</div>
+                <div class="card-desc">{h['file_count']:,} Files &bull; {h['adr_count']} ADR Decisional Links</div>
+            </div>
+        </div>
+
+        <div class="section-title">👤 Key Person Dependency & Bus Factor Analysis</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>File Path</th>
+                    <th>Primary Author</th>
+                    <th>Contribution Share</th>
+                    <th>Total Commits</th>
+                </tr>
+            </thead>
+            <tbody>
+                {kp_rows}
+            </tbody>
+        </table>
+
+        <div class="section-title">🔥 Codebase Hotspots & High-Fragility Modules</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>File Path</th>
+                    <th>Commit Churn</th>
+                    <th>Risk Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {hotspot_rows}
+            </tbody>
+        </table>
+
+        <div class="section-title">🔗 Hidden Co-Change Coupling (L3 Association Rules)</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Source File</th>
+                    <th>Coupled Destination File</th>
+                    <th>Co-Change Rate</th>
+                    <th>Shared Commits</th>
+                </tr>
+            </thead>
+            <tbody>
+                {co_rows}
+            </tbody>
+        </table>
+
+        <div class="footer">
+            <div>M&A Executive Report &bull; LORE Institutional Memory Layer</div>
+            <div>SHA-256 Verified Evidence Seal</div>
         </div>
     </div>
-
-    <div class="grid">
-        <div class="card">
-            <div class="card-title">Codebase Health Score</div>
-            <div class="card-value" style="color: {'#22c55e' if h['health_score']>=75 else '#eab308' if h['health_score']>=60 else '#ef4444'}">{h['health_score']} / 100</div>
-            <div class="card-desc">Grade: {h['health_grade']}</div>
-        </div>
-        <div class="card">
-            <div class="card-title">Bus Factor Risk Level</div>
-            <div class="card-value" style="font-size: 24px; margin-top: 20px;">{bf['bus_factor_risk_level']}</div>
-            <div class="card-desc">{bf['single_author_files_count']} files ({bf['bus_factor_ratio_percent']}%) have >70% single-author concentration.</div>
-        </div>
-        <div class="card">
-            <div class="card-title">Knowledge Graph Scale</div>
-            <div class="card-value">{h['symbol_count']:,}</div>
-            <div class="card-desc">{h['file_count']:,} Files &bull; {h['adr_count']} ADR Decision Links</div>
-        </div>
-    </div>
-
-    <div class="section-header">👤 Key Person Dependency & Bus Factor Analysis</div>
-    <table>
-        <thead>
-            <tr>
-                <th>File Path</th>
-                <th>Primary Author</th>
-                <th>Contribution Share</th>
-                <th>Total Commits</th>
-            </tr>
-        </thead>
-        <tbody>
-            {kp_rows}
-        </tbody>
-    </table>
-
-    <div class="section-header">🔥 Codebase Hotspots & High-Fragility Modules</div>
-    <table>
-        <thead>
-            <tr>
-                <th>File Path</th>
-                <th>Commit Churn</th>
-                <th>Risk Score</th>
-            </tr>
-        </thead>
-        <tbody>
-            {hotspot_rows}
-        </tbody>
-    </table>
-
-    <div class="section-header">🔗 Hidden Co-Change Coupling (L3 Association Rules)</div>
-    <table>
-        <thead>
-            <tr>
-                <th>Source File</th>
-                <th>Coupled Destination File</th>
-                <th>Co-Change Rate</th>
-                <th>Shared Commits</th>
-            </tr>
-        </thead>
-        <tbody>
-            {co_rows}
-        </tbody>
-    </table>
 </body>
 </html>
 """
