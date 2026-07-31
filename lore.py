@@ -41,6 +41,7 @@ from cli.feedback import _main_dismiss
 from cli.reindex import _main_reindex
 from cli.due_diligence import _main_due_diligence
 from cli.dora_report import _main_dora_report
+from cli.ai_act_report import _main_ai_act_report
 
 def main() -> None:
     if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help", "help"):
@@ -55,6 +56,7 @@ def main() -> None:
         table.add_row("init", "Initialize LORE workspace and index project files (bootstrap)")
         table.add_row("due-diligence", "Run Technical Due Diligence & Health Audit for M&A / VCs")
         table.add_row("dora-report", "Run EU DORA (Digital Operational Resilience Act) & NIS2 Audit")
+        table.add_row("ai-act-report", "Run EU AI Act (Regulation EU 2024/1689) Regulatory Audit")
         table.add_row("apply", "Apply a natural language task to modify the codebase (default mode)")
         table.add_row("query", "Query the Knowledge Graph for architectural questions (read-only)")
         table.add_row("audit", "Run a full autonomous audit and launch the Developer Console")
@@ -89,6 +91,8 @@ def main() -> None:
         _main_due_diligence(argv)
     elif cmd == "dora-report":
         _main_dora_report(argv)
+    elif cmd == "ai-act-report":
+        _main_ai_act_report(argv)
     elif cmd == "apply":
         _main_apply(argv)
     elif cmd == "query":
