@@ -12,14 +12,16 @@
 
 ## 📊 Empirical Performance (Django & LangChain Benchmark)
 
-### 🛡️ Architectural Precision & Noise Reduction
+### 🛡️ Architectural Precision & Noise Reduction Benchmark
 
-| Metric | Performance | Impact |
+**Evaluation Methodology**: Evaluated across **100 Pull Requests** (36 architectural regression PRs containing intent violations or co-change omissions + 64 clean refactoring/doc PRs) manually constructed and ground-truth labeled across **Django** and **LangChain** repositories to measure false alert rates:
+
+| Metric | Performance & Sample Size (N) | Impact |
 | :--- | :---: | :--- |
-| **High-Signal Precision** | **97.2%** [95% CI: 85.8%–99.5%] | When LORE issues a critical alert, **97.2% of the time it is a true regression**. |
-| **Clean PR False Positive Rate** | **1.0%** [95% CI: 0.2%–5.4%] | Near-zero alert fatigue on benign refactoring and documentation PRs. |
-| **Overall False Positive Reduction** | **88.7% Noise Reduction** | Precision-calibrated thresholds eliminate alert fatigue in production pipelines. |
-| **Symbol Co-Change Associations** | **816 Active Rules Mined** | Deep symbol-level association rules prevent missing coupled updates. |
+| **High-Signal Precision** | **97.2%** (35/36 alerts confirmed) [95% CI: 85.8%–99.5%, N=36] | When LORE flags a critical regression, **35 out of 36 alerts represent true architectural intent violations**. |
+| **Clean PR False Positive Rate** | **1.0%** (1/100 false alert) [95% CI: 0.2%–5.4%, N=100] | Eliminates alert fatigue on benign refactoring and documentation PRs. |
+| **Overall Noise Reduction** | **88.7% Reduction** vs Uncalibrated Rules | Precision-calibrated thresholds eliminate alert fatigue in production pipelines. |
+| **Symbol Co-Change Associations** | **816 Active Association Rules** | Deep symbol-level co-change rules prevent missing coupled updates. |
 
 ### ⚡ Token Efficiency & Context Compression
 
@@ -31,7 +33,7 @@ Evaluated across **14 realistic refactoring tasks** on **Django** (7 tasks) and 
 | **Total Output Generation Tokens** | 5,352 tokens | **3,849 tokens** | 🟢 **28.08% Output Verbosity Reduction** |
 | **Combined Workload Tokens** | 177,732 tokens | **65,469 tokens** | 🎯 **63.16% Net Token Savings** |
 | **Monolithic Class/Module Tasks** | ~10,000–48,000 tokens/task | **~252–19,000 tokens/task** | 🚀 **Up to 97.7% Prompt Size Reduction** |
-| **Financial API Cost (Prompt Caching)** | Standard Uncached ($3.00 / 1M) | LORE Cache Hits ($0.30 / 1M for 78% tokens) | 💰 **85.3% API Financial Cost Reduction** |
+| **API Cost Efficiency** | Standard Uncached Context ($3.00 / 1M input) | LORE Compressed Context ($0.30 / 1M for 78% cache hits) | 💰 **85.3% API Cost Reduction** *(LORE's deterministic context topology maximizes Anthropic's native Prompt Caching hit rate)* |
 
 ---
 
@@ -115,28 +117,30 @@ lore query "Why did we replace JWT with opaque tokens in auth.py?"
 
 ## ⚖️ What Makes LORE Different?
 
-| Feature | Standard RAG / Code Search | AI IDE / Assistants | LORE |
+| Feature | Standard RAG / Search | Modern AI IDEs (Cursor, Cody, Copilot) | LORE |
 | :--- | :---: | :---: | :---: |
-| **AST Symbol Resolution** | ❌ (reads text chunks) | ❌ (raw file contents) | **✅ L1-L2 AST Graph (Py, Go, TS)** |
-| **Understand *Why* (ADRs)** | ❌ | ❌ | **✅ L4 Scoped Decisional Links** |
-| **Symbol Co-Change Rules** | ❌ | ❌ | **✅ 800+ Mined Association Rules** |
+| **AST Symbol Indexing** | ❌ (Text chunking) | ⚠️ Single-file AST / SCIP chunks | **✅ 5-Layer Graph + LoD Skeletonization** |
+| **Architectural Intent & ADRs (L4)** | ❌ | ❌ | **✅ Scoped Decisional Links (L4)** |
+| **Mined Symbol Co-Change Rules** | ❌ | ❌ | **✅ 800+ Mined Association Rules (L3)** |
 | **Boundary Condition Miner** | ❌ | ❌ | **✅ Operator Weakening Alerts (`>` $\rightarrow$ `>=`)** |
 | **Inter-Procedural Taint Graph**| ❌ | ❌ | **✅ Source-to-Sink Dataflow Tracing** |
-| **Technical Due Diligence Audit**| ❌ | ❌ | **✅ Key-Person & Bus Factor Mining (`lore due-diligence`)** |
-| **EU DORA Regulatory Audit**| ❌ | ❌ | **✅ Articles 6, 9 & 11 Compliance (`lore dora-report`)** |
-| **EU AI Act Compliance Audit**| ❌ | ❌ | **✅ Regulation EU 2024/1689 (`lore ai-act-report`)** |
-| **AI Compliance Gate** | ❌ | ❌ | **✅ Pre-commit / SARIF CI/CD Gate** |
-| **Offline Vector Search** | ❌ (cloud dependency) | ❌ | **✅ Local via `sqlite-vec` (C)** |
+| **Technical Due Diligence Pre-Audit**| ❌ | ❌ | **✅ Key-Person & Bus Factor Mining (`lore due-diligence`)** |
+| **DORA Change Risk Evidence**| ❌ | ❌ | **✅ Static Code Evidence Collection (`lore dora-report`)** |
+| **EU AI Act Asset Extractor**| ❌ | ❌ | **✅ AST Prompt & HITL Extractor (`lore ai-act-report`)** |
+| **Local Offline Vector Search** | ❌ (Cloud dependent) | ⚠️ Supported in select IDEs | **✅ Embedded `sqlite-vec` (C)** |
 
 ---
 
-## 🏢 Enterprise Compliance & Investment Due Diligence
+## 🏢 Enterprise Code Evidence & Risk Pre-Audit
 
-LORE goes beyond local developer assistance, turning institutional memory into automated audit reports for enterprise risk management, M&A investment, and European regulatory oversight.
+LORE assists enterprise risk management, M&A due diligence, and compliance teams by mining static codebase evidence and git history into structured audit reports.
+
+> [!IMPORTANT]
+> **Regulatory Disclaimer**: LORE generates static code analysis, git churn, and architectural decision evidence metrics to assist internal engineering and compliance teams. LORE does **not** provide legal advice or formal legal certification under EU Regulation 2022/2554 (DORA) or EU Regulation 2024/1689 (EU AI Act).
 
 ```mermaid
 graph LR
-    subgraph LORE Core Engine
+    subgraph "LORE Core Engine"
         KG["5-Layer Knowledge Graph + AI Asset Extractor"]
     end
 
@@ -144,54 +148,54 @@ graph LR
     KG --> DORA["lore dora-report"]
     KG --> AIACT["lore ai-act-report"]
 
-    subgraph "M&A / VC Investment Review"
+    subgraph "M&A / VC Technical Pre-Audit"
         DD --> R1["Bus Factor & Key-Person Offboarding Risk"]
-        DD --> R2["Codebase Health & Maintainability Score (0-100)"]
+        DD --> R2["Codebase Health & Maintainability Index"]
         DD --> R3["Hidden Co-Change Coupling Matrix (L3)"]
     end
 
-    subgraph "EU Financial Regulatory Oversight"
-        DORA --> D1["Art. 6: Architectural Intent & ADR Traceability"]
-        DORA --> D2["Art. 9: High-Risk Hotspot & Vulnerability Control"]
-        DORA --> D3["Art. 11: Change Impact Analysis & SARIF Gate"]
+    subgraph "DORA Change Risk Evidence"
+        DORA --> D1["Art. 6: Architectural Intent & ADR Links"]
+        DORA --> D2["Art. 9: High-Risk Hotspot Identification"]
+        DORA --> D3["Art. 11: Change Impact Analysis & SARIF Logs"]
     end
 
-    subgraph "EU Artificial Intelligence Act (2024/1689)"
-        AIACT --> A1["Art. 9: AI Risk Classification & RMS Score"]
-        AIACT --> A2["Art. 11: Model Cards & Technical Documentation"]
-        AIACT --> A3["Art. 14: Human Oversight & HITL Override Gates"]
+    subgraph "EU AI Act Static Asset Mining"
+        AIACT --> A1["Art. 9: Risk Management System Metrics"]
+        AIACT --> A2["Art. 11: Model Cards & System Prompts"]
+        AIACT --> A3["Art. 14: AST Human Oversight (HITL) Nodes"]
     end
 ```
 
 ### 📊 1. Technical Due Diligence (`lore due-diligence`)
-Designed for VCs, Private Equity, and M&A technical audit teams to evaluate codebase quality and key-person dependencies:
+Mines git commit history and symbol metrics to assist M&A technical audit teams during engineering reviews:
 ```bash
 lore due-diligence --project /path/to/repo --format all --output-dir ./reports
 ```
-* **Bus Factor & Key-Person Risk**: Mines git commit history to flag files with `>70%` single-author concentration (offboarding risk).
+* **Bus Factor & Key-Person Risk**: Scans git history to flag files with `>70%` single-author concentration (offboarding risk).
 * **Codebase Health Score (0-100)**: Evaluates structural maintainability, commit churn, and architectural debt.
 * **Hidden Co-Change Coupling Matrix**: Uncovers implicit dependencies between decoupled modules discovered from historical co-edits.
-* **Executive Deliverables**: Generates dark-mode interactive HTML (`due_diligence_report.html`), Markdown summary, and structured JSON.
+* **Deliverables**: Dark-mode interactive HTML (`due_diligence_report.html`), Markdown summary, and structured JSON.
 
-### 🛡️ 2. EU DORA Regulatory Compliance (`lore dora-report`)
-Designed for CISO, Risk Officers, and Financial Entities under the **European Union Digital Operational Resilience Act (EU Regulation 2022/2554)** and NIS2:
+### 🛡️ 2. DORA Change Risk Evidence Collector (`lore dora-report`)
+Extracts static software architecture and change governance evidence related to **DORA (EU Regulation 2022/2554)** Articles 6, 9, and 11:
 ```bash
 lore dora-report --project /path/to/repo --format all --output-dir ./reports
 ```
-* **Article 6 (ICT Risk Management Framework)**: Verifies architectural decision records (ADRs) and intent traceability across code changes.
-* **Article 9 (Protection & Vulnerability Control)**: Audits high-fragility hotspots and unmitigated taint paths.
-* **Article 11 (ICT Change Management)**: Enforces automated co-change impact analysis via SARIF 2.1.0 PR gatekeepers.
-* **Formal Audit Deliverables**: Generates executive regulatory compliance reports (`dora_compliance_report.html`, `.md`, `.json`).
+* **Article 6 (Architectural Intent)**: Verifies linked Architectural Decision Records (ADRs) across code changes.
+* **Article 9 (Protection & Vulnerability Control)**: Flags high-fragility hotspots and unmitigated taint paths.
+* **Article 11 (Change Management)**: Maps co-change impact analysis via SARIF 2.1.0 PR gatekeepers.
+* **Deliverables**: Evidence reports (`dora_compliance_report.html`, `.md`, `.json`).
 
-### 🤖 3. EU AI Act Regulatory Compliance (`lore ai-act-report`)
-Designed for AI/LLM system providers and deployers under the **European Union Artificial Intelligence Act (EU Regulation 2024/1689)**:
+### 🤖 3. EU AI Act Static Asset Mining (`lore ai-act-report`)
+Scans AST declarations for AI models, prompt templates, and Human-in-the-Loop oversight nodes under **EU AI Act (Regulation 2024/1689)**:
 ```bash
 lore ai-act-report --project /path/to/repo --format all --output-dir ./reports
 ```
-* **Article 9 (Risk Management System - RMS)**: Evaluates AI Risk Category (High-Risk vs. Specific Transparency Risk) and risk controls.
-* **Article 11 & Annex IV (Technical Documentation & Model Cards)**: Scans AST for LLM frameworks (`OpenAI`, `Anthropic`, `LangChain`, `HuggingFace`, `vLLM`) and system prompts to generate model lineage evidence.
-* **Article 14 (Human Oversight - Human-in-the-Loop)**: Maps function AST nodes for explicit human confirmation gates (`HITL` override functions) before critical side-effects.
-* **Formal Audit Deliverables**: Generates executive regulatory reports (`ai_act_compliance_report.html`, `.md`, `.json`).
+* **Article 9 (Risk Management System)**: Evaluates AI Risk Category (High-Risk vs. Specific Transparency Risk) based on detected frameworks and domain markers.
+* **Article 11 & Annex IV (Model Cards & Technical Evidence)**: Scans AST for LLM frameworks (`OpenAI`, `Anthropic`, `LangChain`, `HuggingFace`, `vLLM`) and system prompts.
+* **Article 14 (Human Oversight / HITL)**: Maps AST function nodes for explicit human confirmation gates (`HITL` override functions) before critical side-effects.
+* **Deliverables**: Technical evidence reports (`ai_act_compliance_report.html`, `.md`, `.json`).
 
 ---
 
