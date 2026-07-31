@@ -124,6 +124,7 @@ lore query "Why did we replace JWT with opaque tokens in auth.py?"
 | **Inter-Procedural Taint Graph**| ❌ | ❌ | **✅ Source-to-Sink Dataflow Tracing** |
 | **Technical Due Diligence Audit**| ❌ | ❌ | **✅ Key-Person & Bus Factor Mining (`lore due-diligence`)** |
 | **EU DORA Regulatory Audit**| ❌ | ❌ | **✅ Articles 6, 9 & 11 Compliance (`lore dora-report`)** |
+| **EU AI Act Compliance Audit**| ❌ | ❌ | **✅ Regulation EU 2024/1689 (`lore ai-act-report`)** |
 | **AI Compliance Gate** | ❌ | ❌ | **✅ Pre-commit / SARIF CI/CD Gate** |
 | **Offline Vector Search** | ❌ (cloud dependency) | ❌ | **✅ Local via `sqlite-vec` (C)** |
 
@@ -131,16 +132,17 @@ lore query "Why did we replace JWT with opaque tokens in auth.py?"
 
 ## 🏢 Enterprise Compliance & Investment Due Diligence
 
-LORE goes beyond local developer assistance, turning institutional memory into automated audit reports for enterprise risk management, M&A investment, and regulatory oversight.
+LORE goes beyond local developer assistance, turning institutional memory into automated audit reports for enterprise risk management, M&A investment, and European regulatory oversight.
 
 ```mermaid
 graph LR
     subgraph LORE Core Engine
-        KG["5-Layer Knowledge Graph + Git History"]
+        KG["5-Layer Knowledge Graph + AI Asset Extractor"]
     end
 
     KG --> DD["lore due-diligence"]
     KG --> DORA["lore dora-report"]
+    KG --> AIACT["lore ai-act-report"]
 
     subgraph M&A / VC Investment Review
         DD --> R1["Bus Factor & Key-Person Offboarding Risk"]
@@ -152,6 +154,12 @@ graph LR
         DORA --> D1["Art. 6: Architectural Intent & ADR Traceability"]
         DORA --> D2["Art. 9: High-Risk Hotspot & Vulnerability Control"]
         DORA --> D3["Art. 11: Change Impact Analysis & SARIF Gate"]
+    end
+
+    subgraph EU Artificial Intelligence Act (2024/1689)
+        AIACT --> A1["Art. 9: AI Risk Classification & RMS Score"]
+        AIACT --> A2["Art. 11: Model Cards & Technical Documentation"]
+        AIACT --> A3["Art. 14: Human Oversight & HITL Override Gates"]
     end
 ```
 
@@ -175,6 +183,16 @@ lore dora-report --project /path/to/repo --format all --output-dir ./reports
 * **Article 11 (ICT Change Management)**: Enforces automated co-change impact analysis via SARIF 2.1.0 PR gatekeepers.
 * **Formal Audit Deliverables**: Generates executive regulatory compliance reports (`dora_compliance_report.html`, `.md`, `.json`).
 
+### 🤖 3. EU AI Act Regulatory Compliance (`lore ai-act-report`)
+Designed for AI/LLM system providers and deployers under the **European Union Artificial Intelligence Act (EU Regulation 2024/1689)**:
+```bash
+lore ai-act-report --project /path/to/repo --format all --output-dir ./reports
+```
+* **Article 9 (Risk Management System - RMS)**: Evaluates AI Risk Category (High-Risk vs. Specific Transparency Risk) and risk controls.
+* **Article 11 & Annex IV (Technical Documentation & Model Cards)**: Scans AST for LLM frameworks (`OpenAI`, `Anthropic`, `LangChain`, `HuggingFace`, `vLLM`) and system prompts to generate model lineage evidence.
+* **Article 14 (Human Oversight - Human-in-the-Loop)**: Maps function AST nodes for explicit human confirmation gates (`HITL` override functions) before critical side-effects.
+* **Formal Audit Deliverables**: Generates executive regulatory reports (`ai_act_compliance_report.html`, `.md`, `.json`).
+
 ---
 
 ## 🛠️ CLI Command Overview
@@ -184,6 +202,7 @@ lore dora-report --project /path/to/repo --format all --output-dir ./reports
 | `lore init` | Initialize LORE workspace and index project files (bootstrap). |
 | `lore due-diligence` | Run Technical Due Diligence & Codebase Health Audit for M&A, VC & PE. |
 | `lore dora-report` | Run EU DORA (Digital Operational Resilience Act 2022/2554) & NIS2 Audit. |
+| `lore ai-act-report` | Run EU AI Act (Regulation EU 2024/1689) Regulatory Audit. |
 | `lore gh-check` | Run PR security & architecture audit with `--format [markdown\|json\|sarif]` and `--fail-on`. |
 | `lore reindex` | Re-compute symbol fragility scores & co-changes across existing Knowledge Graphs. |
 | `lore dismiss` | Suppress a false positive LORE warning for a file or symbol persistent in SQLite. |
