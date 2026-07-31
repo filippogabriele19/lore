@@ -122,8 +122,58 @@ lore query "Why did we replace JWT with opaque tokens in auth.py?"
 | **Symbol Co-Change Rules** | ❌ | ❌ | **✅ 800+ Mined Association Rules** |
 | **Boundary Condition Miner** | ❌ | ❌ | **✅ Operator Weakening Alerts (`>` $\rightarrow$ `>=`)** |
 | **Inter-Procedural Taint Graph**| ❌ | ❌ | **✅ Source-to-Sink Dataflow Tracing** |
+| **Technical Due Diligence Audit**| ❌ | ❌ | **✅ Key-Person & Bus Factor Mining (`lore due-diligence`)** |
+| **EU DORA Regulatory Audit**| ❌ | ❌ | **✅ Articles 6, 9 & 11 Compliance (`lore dora-report`)** |
 | **AI Compliance Gate** | ❌ | ❌ | **✅ Pre-commit / SARIF CI/CD Gate** |
 | **Offline Vector Search** | ❌ (cloud dependency) | ❌ | **✅ Local via `sqlite-vec` (C)** |
+
+---
+
+## 🏢 Enterprise Compliance & Investment Due Diligence
+
+LORE goes beyond local developer assistance, turning institutional memory into automated audit reports for enterprise risk management, M&A investment, and regulatory oversight.
+
+```mermaid
+graph LR
+    subgraph LORE Core Engine
+        KG["5-Layer Knowledge Graph + Git History"]
+    end
+
+    KG --> DD["lore due-diligence"]
+    KG --> DORA["lore dora-report"]
+
+    subgraph M&A / VC Investment Review
+        DD --> R1["Bus Factor & Key-Person Offboarding Risk"]
+        DD --> R2["Codebase Health & Maintainability Score (0-100)"]
+        DD --> R3["Hidden Co-Change Coupling Matrix (L3)"]
+    end
+
+    subgraph EU Financial Regulatory Oversight
+        DORA --> D1["Art. 6: Architectural Intent & ADR Traceability"]
+        DORA --> D2["Art. 9: High-Risk Hotspot & Vulnerability Control"]
+        DORA --> D3["Art. 11: Change Impact Analysis & SARIF Gate"]
+    end
+```
+
+### 📊 1. Technical Due Diligence (`lore due-diligence`)
+Designed for VCs, Private Equity, and M&A technical audit teams to evaluate codebase quality and key-person dependencies:
+```bash
+lore due-diligence --project /path/to/repo --format all --output-dir ./reports
+```
+* **Bus Factor & Key-Person Risk**: Mines git commit history to flag files with `>70%` single-author concentration (offboarding risk).
+* **Codebase Health Score (0-100)**: Evaluates structural maintainability, commit churn, and architectural debt.
+* **Hidden Co-Change Coupling Matrix**: Uncovers implicit dependencies between decoupled modules discovered from historical co-edits.
+* **Executive Deliverables**: Generates dark-mode interactive HTML (`due_diligence_report.html`), Markdown summary, and structured JSON.
+
+### 🛡️ 2. EU DORA Regulatory Compliance (`lore dora-report`)
+Designed for CISO, Risk Officers, and Financial Entities under the **European Union Digital Operational Resilience Act (EU Regulation 2022/2554)** and NIS2:
+```bash
+lore dora-report --project /path/to/repo --format all --output-dir ./reports
+```
+* **Article 6 (ICT Risk Management Framework)**: Verifies architectural decision records (ADRs) and intent traceability across code changes.
+* **Article 9 (Protection & Vulnerability Control)**: Audits high-fragility hotspots and unmitigated taint paths.
+* **Article 11 (ICT Change Management)**: Enforces automated co-change impact analysis via SARIF 2.1.0 PR gatekeepers.
+* **Formal Audit Deliverables**: Generates executive regulatory compliance reports (`dora_compliance_report.html`, `.md`, `.json`).
 
 ---
 
@@ -132,6 +182,8 @@ lore query "Why did we replace JWT with opaque tokens in auth.py?"
 | Command | Description |
 | :--- | :--- |
 | `lore init` | Initialize LORE workspace and index project files (bootstrap). |
+| `lore due-diligence` | Run Technical Due Diligence & Codebase Health Audit for M&A, VC & PE. |
+| `lore dora-report` | Run EU DORA (Digital Operational Resilience Act 2022/2554) & NIS2 Audit. |
 | `lore gh-check` | Run PR security & architecture audit with `--format [markdown\|json\|sarif]` and `--fail-on`. |
 | `lore reindex` | Re-compute symbol fragility scores & co-changes across existing Knowledge Graphs. |
 | `lore dismiss` | Suppress a false positive LORE warning for a file or symbol persistent in SQLite. |
