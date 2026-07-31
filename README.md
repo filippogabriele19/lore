@@ -20,7 +20,7 @@
 | :--- | :---: | :--- |
 | **High-Signal Precision** | **97.2%** (35/36 alerts confirmed) [95% CI: 85.8%–99.5%, N=36] | When LORE flags a critical regression, **35 out of 36 alerts represent true architectural intent violations**. |
 | **Clean PR False Positive Rate** | **1.0%** (1/100 false alert) [95% CI: 0.2%–5.4%, N=100] | Eliminates alert fatigue on benign refactoring and documentation PRs. |
-| **Overall Noise Reduction** | **88.7% Reduction** vs Uncalibrated Rules | Precision-calibrated thresholds eliminate alert fatigue in production pipelines. |
+| **Overall Noise Reduction** | **88.7% Reduction** vs. Uncalibrated Heuristic Baseline [N=100 PRs] | Calibrated precision-recall thresholds reduce average false alerts from 8.8/PR to 1.0/PR. |
 | **Symbol Co-Change Associations** | **816 Active Association Rules** | Deep symbol-level co-change rules prevent missing coupled updates. |
 
 ### ⚡ Token Efficiency & Context Compression
@@ -204,9 +204,9 @@ lore ai-act-report --project /path/to/repo --format all --output-dir ./reports
 | Command | Description |
 | :--- | :--- |
 | `lore init` | Initialize LORE workspace and index project files (bootstrap). |
-| `lore due-diligence` | Run Technical Due Diligence & Codebase Health Audit for M&A, VC & PE. |
-| `lore dora-report` | Run EU DORA (Digital Operational Resilience Act 2022/2554) & NIS2 Audit. |
-| `lore ai-act-report` | Run EU AI Act (Regulation EU 2024/1689) Regulatory Audit. |
+| `lore due-diligence` | Extract Technical Due Diligence & Codebase Health Pre-Audit Metrics for M&A, VC & PE. |
+| `lore dora-report` | Extract DORA (EU 2022/2554) & NIS2 Static Change Risk Evidence Reports. |
+| `lore ai-act-report` | Extract EU AI Act (EU 2024/1689) Static Asset & Human Oversight (HITL) Evidence. |
 | `lore gh-check` | Run PR security & architecture audit with `--format [markdown\|json\|sarif]` and `--fail-on`. |
 | `lore reindex` | Re-compute symbol fragility scores & co-changes across existing Knowledge Graphs. |
 | `lore dismiss` | Suppress a false positive LORE warning for a file or symbol persistent in SQLite. |
