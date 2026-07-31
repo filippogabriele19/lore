@@ -144,19 +144,19 @@ graph LR
     KG --> DORA["lore dora-report"]
     KG --> AIACT["lore ai-act-report"]
 
-    subgraph M&A / VC Investment Review
+    subgraph "M&A / VC Investment Review"
         DD --> R1["Bus Factor & Key-Person Offboarding Risk"]
         DD --> R2["Codebase Health & Maintainability Score (0-100)"]
         DD --> R3["Hidden Co-Change Coupling Matrix (L3)"]
     end
 
-    subgraph EU Financial Regulatory Oversight
+    subgraph "EU Financial Regulatory Oversight"
         DORA --> D1["Art. 6: Architectural Intent & ADR Traceability"]
         DORA --> D2["Art. 9: High-Risk Hotspot & Vulnerability Control"]
         DORA --> D3["Art. 11: Change Impact Analysis & SARIF Gate"]
     end
 
-    subgraph EU Artificial Intelligence Act (2024/1689)
+    subgraph "EU Artificial Intelligence Act (2024/1689)"
         AIACT --> A1["Art. 9: AI Risk Classification & RMS Score"]
         AIACT --> A2["Art. 11: Model Cards & Technical Documentation"]
         AIACT --> A3["Art. 14: Human Oversight & HITL Override Gates"]
