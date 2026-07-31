@@ -39,6 +39,8 @@ from cli.ingest_github import _main_ingest_github
 from cli.ingest_slack import _main_ingest_slack
 from cli.feedback import _main_dismiss
 from cli.reindex import _main_reindex
+from cli.due_diligence import _main_due_diligence
+from cli.dora_report import _main_dora_report
 
 def main() -> None:
     if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help", "help"):
@@ -47,10 +49,12 @@ def main() -> None:
         console.print("  [bold white]python lore.py <command> [options][/]\n")
         
         table = Table(show_header=True, header_style="bold magenta", box=None)
-        table.add_column("Command", style="bold white", width=12)
+        table.add_column("Command", style="bold white", width=14)
         table.add_column("Description", style="dim")
         
         table.add_row("init", "Initialize LORE workspace and index project files (bootstrap)")
+        table.add_row("due-diligence", "Run Technical Due Diligence & Health Audit for M&A / VCs")
+        table.add_row("dora-report", "Run EU DORA (Digital Operational Resilience Act) & NIS2 Audit")
         table.add_row("apply", "Apply a natural language task to modify the codebase (default mode)")
         table.add_row("query", "Query the Knowledge Graph for architectural questions (read-only)")
         table.add_row("audit", "Run a full autonomous audit and launch the Developer Console")
@@ -81,6 +85,10 @@ def main() -> None:
     
     if cmd == "init":
         _main_init(argv)
+    elif cmd == "due-diligence":
+        _main_due_diligence(argv)
+    elif cmd == "dora-report":
+        _main_dora_report(argv)
     elif cmd == "apply":
         _main_apply(argv)
     elif cmd == "query":
